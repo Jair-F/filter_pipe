@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal Filter Simulator</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #e0e0e0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: #1e1e1e; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); width: 90%; max-width: 800px; }
+        canvas { width: 100%; height: 200px; background: #000; border-radius: 8px; margin-bottom: 20px; border: 1px solid #333; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .control-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; margin-bottom: 5px; color: #bb86fc; }
+        select, input { background: #333; color: white; border: 1px solid #444; padding: 5px; border-radius: 4px; }
+        button { grid-column: 1 / -1; padding: 12px; background: #03dac6; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #018786; }
+        .value-display { font-family: monospace; font-size: 0.8rem; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Signal Filter Lab</h2>
+    <canvas id="visualizer"></canvas>
+    
+    <div class="controls">
+        <button id="startBtn">START AUDIO</button>
+
+        <div class="control-group">
+            <label>Filter Type</label>
+            <select id="filterType">
+                <option value="lowpass">Lowpass</option>
+                <option value="highpass">Highpass</option>
+                <option value="bandpass">Bandpass</option>
+                <option value="notch">Notch</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Cutoff Frequency: <span id="freqVal" class="value-display">1000</span> Hz</label>
+            <input type="range" id="frequency" min="20" max="10000" value="1000">
+        </div>
+
+        <div class="control-group">
+            <label>Resonance (Q): <span id="qVal" class="value-display">1</span></label>
+            <input type="range" id="q" min="0.1" max="20" step="0.1" value="1">
+        </div>
+
+        <div class="control-group">
+            <label>Filter Gain: <span id="gainVal" class="value-display">0</span> dB</label>
+            <input type="range" id="gain" min="-40" max="40" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>White Noise Volume</label>
+            <input type="range" id="noiseVol" min="0" max="0.5" step="0.01" value="0.1">
+        </div>
+
+        <div class="control-group">
+            <label>Interference (Sine): <span id="intVal" class="value-display">440</span> Hz</label>
+            <input type="range" id="interferenceFreq" min="20" max="5000" value="440">
+        </div>
+    </div>
+</div>
+
+<script>
+    let audioCtx, noiseNode, filterNode, interferenceNode, mainGain, analyser;
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
+
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // 1. Create White Noise (Randomized)
+        const bufferSize = 2 * audioCtx.sampleRate;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+        noiseNode = audioCtx.createBufferSource();
+        noiseNode.buffer = noiseBuffer;
+        noiseNode.loop = true;
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.value = 0.1;
+
+        // 2. Create Interference (Sine wave)
+        interferenceNode = audioCtx.createOscillator();
+        interferenceNode.type = 'sine';
+        interferenceNode.frequency.value = 440;
+        const interferenceGain = audioCtx.createGain();
+        interferenceGain.gain.value = 0.05;
+
+        // 3. Create Filter
+        filterNode = audioCtx.createBiquadFilter();
+        filterNode.type = 'lowpass';
+        filterNode.frequency.value = 1000;
+
+        // 4. Analyser for visualization
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+
+        mainGain = audioCtx.createGain();
+        mainGain.gain.value = 0.5;
+
+        // Connections
+        noiseNode.connect(noiseGain);
+        interferenceNode.connect(interferenceGain);
+        
+        noiseGain.connect(filterNode);
+        interferenceGain.connect(filterNode);
+        
+        filterNode.connect(analyser);
+        analyser.connect(mainGain);
+        mainGain.connect(audioCtx.destination);
+
+        noiseNode.start();
+        interferenceNode.start();
+        draw();
+    }
+
+    // UI Listeners
+    document.getElementById('startBtn').addEventListener('click', function() {
+        if (!audioCtx) {
+            initAudio();
+            this.textContent = "STOP AUDIO";
+        } else {
+            audioCtx.state === 'suspended' ? audioCtx.resume() : audioCtx.suspend();
+            this.textContent = audioCtx.state === 'suspended' ? "RESUME AUDIO" : "STOP AUDIO";
+        }
+    });
+
+    document.getElementById('filterType').onchange = (e) => filterNode.type = e.target.value;
+    document.getElementById('frequency').oninput = (e) => {
+        filterNode.frequency.value = e.target.value;
+        document.getElementById('freqVal').textContent = e.target.value;
+    };
+    document.getElementById('q').oninput = (e) => {
+        filterNode.Q.value = e.target.value;
+        document.getElementById('qVal').textContent = e.target.value;
+    };
+    document.getElementById('gain').oninput = (e) => {
+        filterNode.gain.value = e.target.value;
+        document.getElementById('gainVal').textContent = e.target.value;
+    };
+    document.getElementById('interferenceFreq').oninput = (e) => {
+        interferenceNode.frequency.value = e.target.value;
+        document.getElementById('intVal').textContent = e.target.value;
+    };
+
+    function draw() {
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyser.getByteFrequencyData(dataArray);
+
+        canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let barHeight;
+        let x = 0;
+
+        for(let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i] / 2;
+            canvasCtx.fillStyle = `rgb(50, ${barHeight + 100}, 200)`;
+            canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+            x += barWidth + 1;
+        }
+        requestAnimationFrame(draw);
+    }
+</script>
+</body>
+</html>
