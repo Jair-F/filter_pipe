@@ -3,210 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signal & Sensor Filter Lab</title>
+    <title>Signal & Sensor Lab Pro</title>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --text: #c9d1d9; --border: #30363d; }
+        :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --text: #c9d1d9; --border: #30363d; --mute: #f85149; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 30px; max-width: 1100px; margin-inline: auto; }
-        h2 { margin-top: 0; color: #fff; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: 500; }
+        .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 1100px; margin-inline: auto; }
+        h2 { margin: 0 0 15px 0; color: #fff; display: flex; justify-content: space-between; align-items: center; }
         
-        .grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
-        canvas { width: 100%; height: 200px; background: #000; border-radius: 6px; border: 1px solid #333; }
+        .grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        canvas { width: 100%; height: 180px; background: #000; border-radius: 6px; border: 1px solid #333; }
         
         /* Filter Nodes */
-        .pipeline { display: flex; flex-direction: column; gap: 10px; }
-        .node { background: #0d1117; border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 12px; border-radius: 6px; position: relative; }
-        .node-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .pipeline { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; padding-right: 5px; }
+        .node { background: #0d1117; border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 10px; border-radius: 6px; }
+        .node-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; font-size: 0.8rem; }
         
         /* Controls */
         .ctrl-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.85rem; }
-        .num-input-wrap { display: flex; align-items: center; background: #21262d; border-radius: 4px; border: 1px solid var(--border); }
-        .num-input-wrap input { width: 60px; background: none; border: none; color: white; text-align: center; padding: 4px; }
-        .spin { background: #30363d; color: white; border: none; padding: 4px 8px; cursor: pointer; font-weight: bold; }
+        .num-input-wrap { display: flex; align-items: center; background: #21262d; border-radius: 4px; border: 1px solid var(--border); overflow: hidden; }
+        .num-input-wrap input { width: 70px; background: none; border: none; color: white; text-align: center; padding: 5px; font-family: monospace; }
+        .spin { background: #30363d; color: white; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
         .spin:hover { background: #484f58; }
         
-        button.add-btn { width: 100%; padding: 10px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: 600; }
-        #startBtn { padding: 15px 30px; background: #58a6ff; color: #fff; border-radius: 6px; border: none; cursor: pointer; font-size: 1.1rem; }
+        /* Buttons */
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-add { width: 100%; background: #238636; color: white; margin-top: 10px; }
+        .btn-mute { background: #30363d; color: #fff; }
+        .btn-mute.active { background: var(--mute); }
+        #startBtn { padding: 20px 40px; background: var(--accent); color: #fff; font-size: 1.2rem; box-shadow: 0 0 20px rgba(88, 166, 255, 0.4); }
+        
         input[type="range"] { flex: 1; accent-color: var(--accent); }
+        .label-sm { font-size: 0.75rem; color: #8b949e; width: 80px; }
     </style>
 </head>
 <body>
 
-<div id="overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:99; display:flex; justify-content:center; align-items:center;">
-    <button id="startBtn">INITIALIZE BOTH SIMULATIONS</button>
+<div id="overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:99; display:flex; justify-content:center; align-items:center;">
+    <button id="startBtn" class="btn">START MULTI-ENGINE</button>
 </div>
 
 <div class="section">
-    <h2>1. High-Frequency Spectrogram (Audio)</h2>
+    <h2>1. Audio Frequency Lab 
+        <button class="btn btn-mute" id="audioMute">MUTE AUDIO</button>
+    </h2>
     <div class="grid">
         <div class="vis">
             <canvas id="audioCanvas"></canvas>
             <div class="ctrl-row">
-                <label>Interference (Hz):</label>
-                <input type="range" id="intFreq" min="20" max="5000" value="440">
+                <span class="label-sm">Interf. (Hz)</span>
+                <input type="range" id="intFreq" min="20" max="2000" value="440">
                 <div class="num-input-wrap">
-                    <button class="spin" onclick="step('intFreq', -10)">-</button>
+                    <button class="spin" onclick="stepGlobal('intFreq', -10)">-</button>
                     <input type="number" id="intFreqNum" value="440">
-                    <button class="spin" onclick="step('intFreq', 10)">+</button>
+                    <button class="spin" onclick="stepGlobal('intFreq', 10)">+</button>
                 </div>
             </div>
             <div class="ctrl-row">
-                <label>Random Noise:</label>
+                <span class="label-sm">White Noise</span>
                 <input type="range" id="audioNoise" min="0" max="1" step="0.01" value="0.1">
                 <div class="num-input-wrap">
-                    <button class="spin" onclick="step('audioNoise', -0.05)">-</button>
+                    <button class="spin" onclick="stepGlobal('audioNoise', -0.01)">-</button>
                     <input type="number" id="audioNoiseNum" value="0.1">
-                    <button class="spin" onclick="step('audioNoise', 0.05)">+</button>
+                    <button class="spin" onclick="stepGlobal('audioNoise', 0.01)">+</button>
                 </div>
             </div>
         </div>
         <div class="pipeline">
             <div id="audioNodes"></div>
-            <button class="add-btn" onclick="addNode('audio')">+ Add Audio Filter</button>
+            <button class="btn btn-add" onclick="addNode('audio')">+ Add Audio Filter</button>
         </div>
     </div>
 </div>
 
 <div class="section">
-    <h2>2. Low-Frequency Sensor Simulation</h2>
+    <h2>2. Low-Frequency Sensor Lab</h2>
     <div class="grid">
         <div class="vis">
             <canvas id="sensorCanvas"></canvas>
             <div class="ctrl-row">
-                <label>Sensor Jitter:</label>
-                <input type="range" id="sensorNoise" min="0" max="1" step="0.01" value="0.3">
+                <span class="label-sm">Sim Speed</span>
+                <input type="range" id="simSpeed" min="1" max="100" value="10">
                 <div class="num-input-wrap">
-                    <button class="spin" onclick="step('sensorNoise', -0.05)">-</button>
-                    <input type="number" id="sensorNoiseNum" value="0.3">
-                    <button class="spin" onclick="step('sensorNoise', 0.05)">+</button>
+                    <button class="spin" onclick="stepGlobal('simSpeed', -1)">-</button>
+                    <input type="number" id="simSpeedNum" value="10">
+                    <button class="spin" onclick="stepGlobal('simSpeed', 1)">+</button>
                 </div>
             </div>
-            <p style="font-size: 0.8rem; color: #8b949e">Red: Raw Sensor | Blue: Filtered Data</p>
+            <div class="ctrl-row">
+                <span class="label-sm">Jitter Level</span>
+                <input type="range" id="sensorNoise" min="0" max="1" step="0.01" value="0.3">
+                <div class="num-input-wrap">
+                    <button class="spin" onclick="stepGlobal('sensorNoise', -0.05)">-</button>
+                    <input type="number" id="sensorNoiseNum" value="0.3">
+                    <button class="spin" onclick="stepGlobal('sensorNoise', 0.05)">+</button>
+                </div>
+            </div>
         </div>
         <div class="pipeline">
             <div id="sensorNodes"></div>
-            <button class="add-btn" onclick="addNode('sensor')">+ Add Sensor Filter</button>
+            <button class="btn btn-add" onclick="addNode('sensor')">+ Add Sensor Filter</button>
         </div>
     </div>
 </div>
 
 <script>
-/** FILTER CLASSES - TRANSLATED FROM PYTHON **/
-class LowPass {
-    constructor(a=0.1) { this.a=a; this.last=0; }
-    calc(v) { this.last = (1-this.a)*this.last + this.a*v; return this.last; }
-}
-class HighPass {
-    constructor(a=0.1) { this.lp = new LowPass(a); }
-    calc(v) { return v - this.lp.calc(v); }
-}
-class MovingAverage {
-    constructor(n=10) { this.n=Math.max(1, Math.round(n)); this.buf=[]; }
-    calc(v) {
-        this.buf.push(v);
-        if(this.buf.length > this.n) this.buf.shift();
-        return this.buf.reduce((a,b)=>a+b, 0)/this.buf.length;
-    }
-}
-class BandPass {
-    constructor(l, h) { this.lp=new LowPass(l); this.hp=new HighPass(h); }
-    calc(v) { return this.hp.calc(this.lp.calc(v)); }
-}
-class Notch {
-    constructor(l, h) { this.bp=new BandPass(l, h); }
-    calc(v) { return v - this.bp.calc(v); }
-}
-class HighCut {
-    constructor(c) { this.c=c; }
-    calc(v) { return Math.min(this.c, v); }
-}
-class LowCut {
-    constructor(c) { this.c=c; }
-    calc(v) { return Math.max(this.c, v); }
-}
+/** CORE FILTER LOGIC **/
+class LowPass { constructor(a=0.1){this.a=a;this.l=0;} calc(v){this.l=(1-this.a)*this.l+this.a*v; return this.l;}}
+class HighPass { constructor(a=0.1){this.lp=new LowPass(a);} calc(v){return v-this.lp.calc(v);}}
+class MovingAverage { constructor(n=10){this.n=Math.max(1,Math.round(n));this.b=[];} calc(v){this.b.push(v);if(this.b.length>this.n)this.b.shift();return this.b.reduce((a,b)=>a+b,0)/this.b.length;}}
+class BandPass { constructor(l,h){this.lp=new LowPass(l);this.hp=new HighPass(h);} calc(v){return this.hp.calc(this.lp.calc(v));}}
+class Notch { constructor(l,h){this.bp=new BandPass(l,h);} calc(v){return v-this.bp.calc(v);}}
+class HighCut { constructor(c){this.c=c;} calc(v){return Math.min(this.c,v);}}
+class LowCut { constructor(c){this.c=c;} calc(v){return Math.max(this.c,v);}}
 
-let audioCtx, analyser, osc, audioChain = [], sensorChain = [];
-let sensorHistoryRaw = new Array(200).fill(0);
-let sensorHistoryFilt = new Array(200).fill(0);
+let audioCtx, analyser, osc, outGain, audioChain=[], sensorChain=[];
+let sensorHistoryRaw=new Array(200).fill(0), sensorHistoryFilt=new Array(200).fill(0);
+let isMuted = false;
 
 function init() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioCtx.createAnalyser();
-    const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+    outGain = audioCtx.createGain();
+    outGain.gain.value = 0.2;
+    const proc = audioCtx.createScriptProcessor(2048, 1, 1);
     
     osc = audioCtx.createOscillator();
-    const oscGain = audioCtx.createGain();
-    oscGain.gain.value = 0.15;
-
-    processor.onaudioprocess = (e) => {
+    osc.frequency.value = 440;
+    
+    proc.onaudioprocess = (e) => {
         const out = e.outputBuffer.getChannelData(0);
         const aNoise = parseFloat(document.getElementById('audioNoise').value);
         const sNoise = parseFloat(document.getElementById('sensorNoise').value);
+        const speed = parseInt(document.getElementById('simSpeed').value);
 
         for (let i = 0; i < out.length; i++) {
             // Audio Stream
-            let aSample = input[i] + (Math.random()*2-1)*aNoise;
-            for(let n of audioChain) if(n.inst) aSample = n.inst.calc(aSample);
-            out[i] = aSample;
+            let aS = (Math.random()*2-1)*aNoise + (isMuted ? 0 : Math.sin(i*0.1)); // Simulating oscillator input
+            for(let n of audioChain) if(n.inst) aS = n.inst.calc(aS);
+            out[i] = isMuted ? 0 : aS;
 
-            // Sensor Stream (Simulation runs once per block for visual clarity)
-            if(i === 0) {
-                let sRaw = (Math.random()*2-1)*sNoise;
-                let sFilt = sRaw;
-                for(let n of sensorChain) if(n.inst) sFilt = n.inst.calc(sFilt);
-                sensorHistoryRaw.push(sRaw); sensorHistoryRaw.shift();
-                sensorHistoryFilt.push(sFilt); sensorHistoryFilt.shift();
+            // Sensor Stream (Frequency controlled by Speed slider)
+            if(i % (2048 / speed | 0) === 0) {
+                let sR = (Math.random()*2-1)*sNoise;
+                let sF = sR;
+                for(let n of sensorChain) if(n.inst) sF = n.inst.calc(sF);
+                sensorHistoryRaw.push(sR); sensorHistoryRaw.shift();
+                sensorHistoryFilt.push(sF); sensorHistoryFilt.shift();
             }
         }
     };
 
-    const input = new Float32Array(2048); // Dummy input for processor
-    osc.connect(oscGain); oscGain.connect(processor);
-    processor.connect(analyser); analyser.connect(audioCtx.destination);
-    osc.start();
-    loop();
+    osc.connect(outGain); proc.connect(analyser); analyser.connect(audioCtx.destination);
+    osc.start(); loop();
 }
 
 function addNode(target) {
     const id = Date.now();
-    const container = document.getElementById(target + 'Nodes');
     const div = document.createElement('div');
-    div.className = 'node';
-    div.id = `node-${id}`;
-    div.innerHTML = `
-        <div class="node-header">
-            <select onchange="updateNode('${target}', ${id}, 'type', this.value)">
-                <option value="lpass">Low Pass (α)</option>
-                <option value="hpass">High Pass (α)</option>
-                <option value="mavg">Moving Avg (N)</option>
-                <option value="bpass">Band Pass</option>
-                <option value="notch">Notch</option>
-                <option value="hcut">High Cut</option>
-                <option value="lcut">Low Cut</option>
-            </select>
-            <button onclick="removeNode('${target}', ${id})" style="color:red; background:none; border:none; cursor:pointer;">✕</button>
-        </div>
-        <div id="inputs-${id}"></div>
-    `;
-    container.appendChild(div);
-    const chain = target === 'audio' ? audioChain : sensorChain;
+    div.className = 'node'; div.id = `node-${id}`;
+    div.innerHTML = `<div class="node-header">
+        <select onchange="updateNode('${target}', ${id}, 'type', this.value)">
+            <option value="lpass">Low Pass (α)</option><option value="hpass">High Pass (α)</option>
+            <option value="mavg">Moving Avg (N)</option><option value="bpass">Band Pass</option>
+            <option value="notch">Notch</option><option value="hcut">High Cut</option><option value="lcut">Low Cut</option>
+        </select>
+        <button onclick="removeNode('${target}', ${id})" style="color:var(--mute); background:none; border:none; cursor:pointer;">✕</button>
+    </div><div id="inputs-${id}"></div>`;
+    document.getElementById(target+'Nodes').appendChild(div);
+    const chain = target==='audio'?audioChain:sensorChain;
     chain.push({ id, type: 'lpass', p: [0.1, 0.5], inst: null });
     updateNode(target, id);
 }
 
 function updateNode(target, id, key, val) {
-    const chain = target === 'audio' ? audioChain : sensorChain;
+    const chain = target==='audio'?audioChain:sensorChain;
     const node = chain.find(n => n.id === id);
     if(key) node[key] = val;
-    
-    const cont = document.getElementById(`inputs-${id}`);
-    cont.innerHTML = '';
+    const cont = document.getElementById(`inputs-${id}`); cont.innerHTML = '';
     
     const mk = (lbl, idx, isInt=false) => {
         const row = document.createElement('div'); row.className = 'ctrl-row';
         const step = isInt ? 1 : 0.01;
-        row.innerHTML = `<label style="width:50px">${lbl}</label>
-            <input type="range" min="0" max="${isInt?100:2}" step="${step}" value="${node.p[idx]}" oninput="sync(${id}, ${idx}, this.value, '${target}')">
+        row.innerHTML = `<label style="width:40px; font-size:0.7rem">${lbl}</label>
+            <input type="range" min="0" max="${isInt?200:2}" step="${step}" value="${node.p[idx]}" oninput="sync(${id}, ${idx}, this.value, '${target}')">
             <div class="num-input-wrap">
                 <button class="spin" onclick="spin(${id}, ${idx}, -${step}, '${target}')">-</button>
                 <input type="number" value="${node.p[idx]}" step="${step}" oninput="sync(${id}, ${idx}, this.value, '${target}')">
@@ -214,15 +193,14 @@ function updateNode(target, id, key, val) {
             </div>`;
         cont.appendChild(row);
     };
-
     if(['lpass','hpass','hcut','lcut'].includes(node.type)) mk('Val', 0);
-    else if(node.type === 'mavg') mk('N', 0, true);
+    else if(node.type==='mavg') mk('N', 0, true);
     else { mk('L-α', 0); mk('H-α', 1); }
     sync(id, 0, node.p[0], target);
 }
 
 function sync(id, idx, val, target) {
-    const chain = target === 'audio' ? audioChain : sensorChain;
+    const chain = target==='audio'?audioChain:sensorChain;
     const node = chain.find(n => n.id === id);
     node.p[idx] = parseFloat(val);
     const p = node.p;
@@ -235,60 +213,67 @@ function sync(id, idx, val, target) {
     if(node.type==='lcut')  node.inst = new LowCut(p[0]);
 }
 
+// Spin logic that allows EXCEEDING slider ranges
 function spin(id, idx, delta, target) {
     const chain = target === 'audio' ? audioChain : sensorChain;
     const node = chain.find(n => n.id === id);
-    const newVal = Math.max(0, node.p[idx] + delta);
-    const inputs = document.getElementById(`inputs-${id}`).querySelectorAll('input');
-    inputs[idx*2].value = newVal; inputs[idx*2+1].value = newVal.toFixed(2);
+    const newVal = Math.max(0, parseFloat(node.p[idx]) + delta);
+    node.p[idx] = newVal;
+    const cont = document.getElementById(`inputs-${id}`);
+    const numInput = cont.querySelectorAll('input[type="number"]')[idx];
+    const rangeInput = cont.querySelectorAll('input[type="range"]')[idx];
+    numInput.value = newVal.toFixed(2);
+    rangeInput.value = newVal; // Slider will just peg at max, but logic will use newVal
     sync(id, idx, newVal, target);
 }
 
-function removeNode(target, id) {
-    if(target === 'audio') audioChain = audioChain.filter(n => n.id !== id);
-    else sensorChain = sensorChain.filter(n => n.id !== id);
+function stepGlobal(id, delta) {
+    const el = document.getElementById(id);
+    const num = document.getElementById(id+'Num');
+    const newVal = Math.max(0, parseFloat(el.value) + delta);
+    el.value = newVal; num.value = newVal.toFixed(2);
+    if(id === 'intFreq' && osc) osc.frequency.value = newVal;
+}
+
+function removeNode(t, id) {
+    if(t==='audio') audioChain=audioChain.filter(n=>n.id!==id);
+    else sensorChain=sensorChain.filter(n=>n.id!==id);
     document.getElementById(`node-${id}`).remove();
 }
 
-function step(id, delta) {
-    const el = document.getElementById(id);
-    const num = document.getElementById(id+'Num');
-    const val = parseFloat(el.value) + delta;
-    el.value = val; num.value = val;
-    if(id === 'intFreq') osc.frequency.value = val;
-}
+document.getElementById('audioMute').onclick = function() {
+    isMuted = !isMuted;
+    this.classList.toggle('active');
+    this.innerText = isMuted ? "UNMUTE AUDIO" : "MUTE AUDIO";
+};
 
 document.getElementById('startBtn').onclick = () => { init(); document.getElementById('overlay').remove(); };
 
 function loop() {
-    const aCanvas = document.getElementById('audioCanvas');
-    const sCanvas = document.getElementById('sensorCanvas');
-    const actx = aCanvas.getContext('2d');
-    const sctx = sCanvas.getContext('2d');
+    const actx = document.getElementById('audioCanvas').getContext('2d');
+    const sctx = document.getElementById('sensorCanvas').getContext('2d');
     const fData = new Uint8Array(analyser.frequencyBinCount);
-
     const render = () => {
         requestAnimationFrame(render);
-        // Audio
+        // Audio Vis
         analyser.getByteFrequencyData(fData);
-        actx.fillStyle='#000'; actx.fillRect(0,0,aCanvas.width,aCanvas.height);
+        actx.fillStyle='#000'; actx.fillRect(0,0,400,200);
         for(let i=0; i<fData.length; i++) {
-            let h = (fData[i]/255)*200;
+            let h = (fData[i]/255)*180;
             actx.fillStyle = `hsl(${200+(fData[i]/2)}, 100%, 50%)`;
-            actx.fillRect(i*2, 200-h, 2, h);
+            actx.fillRect(i*2, 180-h, 2, h);
         }
-        // Sensor
-        sctx.fillStyle='#000'; sctx.fillRect(0,0,sCanvas.width,sCanvas.height);
+        // Sensor Vis
+        sctx.fillStyle='#000'; sctx.fillRect(0,0,400,180);
         const drawS = (data, col) => {
-            sctx.beginPath(); sctx.strokeStyle=col;
+            sctx.beginPath(); sctx.strokeStyle=col; sctx.lineWidth=2;
             for(let i=0; i<200; i++) {
-                let y = 100 - (data[i]*80);
+                let y = 90 - (data[i]*70);
                 if(i===0) sctx.moveTo(i*2, y); else sctx.lineTo(i*2, y);
             }
             sctx.stroke();
         };
-        drawS(sensorHistoryRaw, '#ff4d4d');
-        drawS(sensorHistoryFilt, '#58a6ff');
+        drawS(sensorHistoryRaw, '#ff4d4d'); drawS(sensorHistoryFilt, '#58a6ff');
     };
     render();
 }
