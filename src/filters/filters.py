@@ -20,7 +20,7 @@ class Filter:
 
     def _extract_argument_float(self, pipe_str:str, argument:str)->float:
         argument += r'\='
-        
+
         start_pos = re.search(argument, pipe_str).end()
         argument = pipe_str[start_pos:]
         end_pos = re.search(r'[\,\)]{1}', argument).end() - 1
@@ -29,7 +29,7 @@ class Filter:
         return float(argument)
 
     def regex_match_str(self) -> str:
-        return r"^filter\(\)$" # https://regex101.com/
+        return r'^filter\(\)$' # https://regex101.com/
 
     def _init_from_pipe_str(self, pipe_str:str)->None:
         if not self.valid_pipe(pipe_str):
@@ -40,7 +40,7 @@ class Filter:
     def calc(self, value:float) -> float:
         self._last_calc_value = value
         return value
-    
+
     def last_calc_value(self) -> float:
         return self._last_calc_value
 
@@ -61,9 +61,9 @@ class MovingAverage(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r"^mavg\(n\=[0-9]+\)$"
+        return r'^mavg\(n\=[0-9]+\)$'
 
-    @typing.override    
+    @typing.override
     def calc(self, value:float) -> float:
         self._last_values.append(value)
         result = sum(self._last_values) / len(self._last_values)
@@ -79,16 +79,16 @@ class LowPass(Filter):
     def __init__(self, pipe_str:str = pipe_from_args()):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
-    
+
     def _init_from_pipe_str(self, pipe_str:str)->None:
         super()._init_from_pipe_str(pipe_str)
         self._alpha = self._extract_argument_float(pipe_str, r'alpha')
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r"^lpass\(alpha\=([0-9]*.?[0-9]+)\)$"
-    
-    @typing.override    
+        return r'^lpass\(alpha\=([0-9]*.?[0-9]+)\)$'
+
+    @typing.override
     def calc(self, value:float) -> float:
         result = (1 - self._alpha) * self.last_calc_value() + self._alpha * value
         super().calc(result)
@@ -97,7 +97,7 @@ class LowPass(Filter):
 class HighPass(Filter):
     @staticmethod
     def pipe_from_args(alpha:float = 0.1) -> str:
-        return F"hpass(alpha={alpha})"    
+        return F"hpass(alpha={alpha})"
 
     def __init__(self, pipe_str:str = pipe_from_args()):
         super().__init__()
@@ -110,9 +110,9 @@ class HighPass(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r"^hpass\(alpha\=([0-9]*.?[0-9]+)\)$"
-    
-    @typing.override    
+        return r'^hpass\(alpha\=([0-9]*.?[0-9]+)\)$'
+
+    @typing.override
     def calc(self, value:float) -> float:
         lpf = self._low_pass.calc(value)
         result = value - lpf
@@ -138,9 +138,9 @@ class BandPass(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r"^bpass\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$"
-    
-    @typing.override    
+        return r'^bpass\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$'
+
+    @typing.override
     def calc(self, value:float) -> float:
         lpf = self._low_pass.calc(value)
         result = self._high_pass.calc(lpf)
@@ -165,9 +165,9 @@ class Notch(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r"^notch\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$"
-    
-    @typing.override    
+        return r'^notch\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$'
+
+    @typing.override
     def calc(self, value:float) -> float:
         band_to_remove = self._band_pass.calc(value)
         result = value - band_to_remove
@@ -189,9 +189,9 @@ class HighCut(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r"^hcut\(cut\=([0-9]*.?[0-9]+)\)$"
-    
-    @typing.override    
+        return r'^hcut\(cut\=([0-9]*.?[0-9]+)\)$'
+
+    @typing.override
     def calc(self, value:float) -> float:
         result = min(self._cut_value, value)
         super().calc(result)
@@ -212,9 +212,9 @@ class LowCut(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r"^lcut\(cut\=([0-9]*.?[0-9]+)\)$"
-    
-    @typing.override    
+        return r'^lcut\(cut\=([0-9]*.?[0-9]+)\)$'
+
+    @typing.override
     def calc(self, value:float) -> float:
         result = max(self._cut_value, value)
         super().calc(result)

@@ -10,7 +10,7 @@ def test_moving_average_filter_length():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == 8
 
 def test_moving_average_filter():
@@ -19,7 +19,7 @@ def test_moving_average_filter():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == 5.5
 
 def test_lowpass():
@@ -28,7 +28,7 @@ def test_lowpass():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(8, rel=0.01)
 
 def test_lowpass_big_alpha():
@@ -37,7 +37,7 @@ def test_lowpass_big_alpha():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(20.6, rel=0.001)
 
 def test_highpass():
@@ -46,7 +46,7 @@ def test_highpass():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(10.03, rel=0.001)
 
 def test_highpass_big_alpha_minus_output():
@@ -55,7 +55,7 @@ def test_highpass_big_alpha_minus_output():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(-2.6, rel=0.001)
 
 def test_highpass_big_alpha_plus_output():
@@ -64,7 +64,7 @@ def test_highpass_big_alpha_plus_output():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(21.5, rel=0.001)
 
 def test_bandpass():
@@ -73,7 +73,7 @@ def test_bandpass():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(1.955, rel=0.01)
 
 def test_bandpass_big_alphas():
@@ -82,7 +82,7 @@ def test_bandpass_big_alphas():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(0.00206, rel=0.01)
 
 def test_notch():
@@ -91,7 +91,7 @@ def test_notch():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(16.04, rel=0.01)
 
 def test_notch_big_alphas():
@@ -100,29 +100,29 @@ def test_notch_big_alphas():
 
     for value in input_values:
         filter.calc(value)
-    
+
     assert filter.last_calc_value() == pytest.approx(18, rel=0.01)
 
 def test_highcut_cutting():
     value = 35
     filter = HighCut('hcut(cut=20)')
-    
+
     assert filter.calc(value) == 20
 
 def test_highcut_not_cutting():
     value = 16
     filter = HighCut('hcut(cut=20)')
-    
+
     assert filter.calc(value) == value
 
 def test_lowcut_cutting():
     value = 16
     filter = LowCut('lcut(cut=20)')
-    
+
     assert filter.calc(value) == 20
 
 def test_lowcut_not_cutting():
     value = 35
     filter = LowCut('lcut(cut=20)')
-    
+
     assert filter.calc(value) == value

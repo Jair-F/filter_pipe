@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signal Lab Pro - Vertical Telemetry</title>
     <style>
-        :root { 
-            --bg: #0b1016; --card: #151b23; --accent: #00f2ff; 
+        :root {
+            --bg: #0b1016; --card: #151b23; --accent: #00f2ff;
             --text: #e1e4e8; --border: #30363d; --raw: #ff4757; --filt: #2ed573; --bypass: #ffa502;
         }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        
+
         .container { max-width: 1300px; margin: 0 auto; }
         .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        
+
         h2 { margin: 0 0 20px 0; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: #8b949e; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        
+
         .grid { display: grid; grid-template-columns: 1fr 420px; gap: 30px; }
         canvas { width: 100%; height: 220px; background: #05070a; border-radius: 8px; border: 1px solid #1f242c; display: block; }
-        
+
         /* TELEMETRY - UPDATED TO VERTICAL STACK */
         .telemetry-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
         .tel-card { background: #05070a; border-radius: 8px; padding: 12px 20px; border-left: 6px solid #ccc; }
@@ -32,7 +32,7 @@
         .node { background: #1c2128; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
         .node-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .node-title { font-size: 0.7rem; font-weight: 900; color: var(--accent); }
-        
+
         /* CONTROLS */
         .control-group { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
         .label-xs { font-size: 0.65rem; color: #8b949e; width: 75px; flex-shrink: 0; font-weight: bold; }
@@ -53,7 +53,7 @@
 
         input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
         select { background: #0d1117; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 4px; font-size: 0.75rem; flex: 1; }
-        
+
         #overlay { position: fixed; inset: 0; background: #05070a; z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #startBtn { padding: 20px 60px; background: var(--accent); color: #000; font-size: 1.2rem; font-weight: 800; border-radius: 50px; cursor: pointer; border: none; }
     </style>
@@ -98,16 +98,16 @@
                     <div class="tel-card raw"><span class="tel-label">Raw Signal</span><span class="tel-value" id="valRaw">0.000</span></div>
                     <div class="tel-card filt"><span class="tel-label">Filtered Data</span><span class="tel-value" id="valFilt">0.000</span></div>
                 </div>
-                
+
                 <canvas id="sensorCanvas"></canvas>
-                
+
                 <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                     <div style="display:flex; flex-direction:column; gap:8px;">
                         <div class="control-group"><span class="label-xs">Signal Amp</span> <input type="range" id="sensorAmp" min="0" max="2" step="0.01" value="0.8" oninput="syncGlobal('sensorAmp', this.value)"> <div class="num-box"><button onclick="spinGlobal('sensorAmp', -0.1)">-</button><input type="number" id="sensorAmpNum" value="0.8" oninput="syncGlobal('sensorAmp', this.value)"><button onclick="spinGlobal('sensorAmp', 0.1)">+</button></div></div>
                         <div class="control-group"><span class="label-xs">Jitter Lvl</span> <input type="range" id="sensorNoise" min="0" max="2" step="0.01" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"> <div class="num-box"><button onclick="spinGlobal('sensorNoise', -0.05)">-</button><input type="number" id="sensorNoiseNum" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"><button onclick="spinGlobal('sensorNoise', 0.05)">+</button></div></div>
                         <div class="control-group"><span class="label-xs">Sim Speed</span> <input type="range" id="simSpeed" min="1" max="100" value="25" oninput="syncGlobal('simSpeed', this.value)"> <div class="num-box"><button onclick="spinGlobal('simSpeed', -1)">-</button><input type="number" id="simSpeedNum" value="25" oninput="syncGlobal('simSpeed', this.value)"><button onclick="spinGlobal('simSpeed', 1)">+</button></div></div>
                     </div>
-                    
+
                     <div class="scale-box">
                         <div style="flex:1">
                             <span class="tel-label">Graph Max</span>
@@ -132,25 +132,25 @@
 /** * PYTHON FILTERS (Filters.py logic)
  */
 class Filter { constructor() { this._l = 0; } calc(v) { this._l = v; return v; } last() { return this._l; } }
-class MovingAverage extends Filter { 
-    constructor(n=10) { super(); this._n=Math.max(1, Math.round(n)); this._v=[]; } 
+class MovingAverage extends Filter {
+    constructor(n=10) { super(); this._n=Math.max(1, Math.round(n)); this._v=[]; }
     calc(v) { this._v.push(v); if(this._v.length>this._n) this._v.shift(); const r=this._v.reduce((a,b)=>a+b,0)/this._v.length; super.calc(r); return r; }
 }
-class LowPass extends Filter { 
-    constructor(a=0.1) { super(); this._a=a; } 
-    calc(v) { const r=(1-this._a)*this.last()+this._a*v; super.calc(r); return r; } 
+class LowPass extends Filter {
+    constructor(a=0.1) { super(); this._a=a; }
+    calc(v) { const r=(1-this._a)*this.last()+this._a*v; super.calc(r); return r; }
 }
-class HighPass extends Filter { 
-    constructor(a=0.1) { super(); this._lp=new LowPass(a); } 
-    calc(v) { const r=v-this._lp.calc(v); super.calc(r); return r; } 
+class HighPass extends Filter {
+    constructor(a=0.1) { super(); this._lp=new LowPass(a); }
+    calc(v) { const r=v-this._lp.calc(v); super.calc(r); return r; }
 }
-class BandPass extends Filter { 
-    constructor(la=0.1, ha=0.5) { super(); this._lp=new LowPass(la); this._hp=new HighPass(ha); } 
-    calc(v) { const r=this._hp.calc(this._lp.calc(v)); super.calc(r); return r; } 
+class BandPass extends Filter {
+    constructor(la=0.1, ha=0.5) { super(); this._lp=new LowPass(la); this._hp=new HighPass(ha); }
+    calc(v) { const r=this._hp.calc(this._lp.calc(v)); super.calc(r); return r; }
 }
-class Notch extends Filter { 
-    constructor(la=0.1, ha=0.5) { super(); this._bp=new BandPass(la, ha); } 
-    calc(v) { const r=v-this._bp.calc(v); super.calc(r); return r; } 
+class Notch extends Filter {
+    constructor(la=0.1, ha=0.5) { super(); this._bp=new BandPass(la, ha); }
+    calc(v) { const r=v-this._bp.calc(v); super.calc(r); return r; }
 }
 class HighCut extends Filter { constructor(c=0.1) { super(); this._c=c; } calc(v) { const r=Math.min(this._c, v); super.calc(r); return r; } }
 class LowCut extends Filter { constructor(c=0.1) { super(); this._c=c; } calc(v) { const r=Math.max(this._c, v); super.calc(r); return r; } }
@@ -165,7 +165,7 @@ function init() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioCtx.createAnalyser();
     const proc = audioCtx.createScriptProcessor(2048, 1, 1);
-    
+
     proc.onaudioprocess = (e) => {
         const out = e.outputBuffer.getChannelData(0);
         const aFreq = parseFloat(document.getElementById('intFreqNum').value);
@@ -177,7 +177,7 @@ function init() {
         const pStep = (2 * Math.PI * aFreq) / audioCtx.sampleRate;
 
         for (let i = 0; i < out.length; i++) {
-            let aS = (Math.sin(phase) * aAmp) + ((Math.random()*2-1)*aNoise); 
+            let aS = (Math.sin(phase) * aAmp) + ((Math.random()*2-1)*aNoise);
             phase += pStep; if(phase > Math.PI*2) phase -= Math.PI*2;
             if(!audioBypass) audioChain.forEach(n => { if(n.inst) aS = n.inst.calc(aS); });
             out[i] = isMuted ? 0 : aS;
@@ -235,7 +235,7 @@ function updateNode(target, id, type, pIdx, val) {
     const n = c.find(x => x.id === id);
     if(type) n.type = type;
     if(val !== undefined) n.p[pIdx] = parseFloat(val);
-    
+
     const cfg = MODS[n.type];
     const args = cfg.params.map(p => p.scale ? n.p[p.k] * p.scale : n.p[p.k]);
     n.inst = new cfg.cls(...args);
@@ -293,7 +293,7 @@ function renderPipeline(target) {
 }
 
 // --- RENDER ---
-document.getElementById('audioMute').onclick = function() { 
+document.getElementById('audioMute').onclick = function() {
     isMuted = !isMuted; this.classList.toggle('active');
     this.innerText = isMuted ? "UNMUTE" : "MUTE AUDIO";
 };
@@ -303,13 +303,13 @@ function loop() {
     const actx = document.getElementById('audioCanvas').getContext('2d');
     const sctx = document.getElementById('sensorCanvas').getContext('2d');
     const fData = new Uint8Array(analyser.frequencyBinCount);
-    
+
     const render = () => {
         requestAnimationFrame(render);
         if(updateDisp) {
             document.getElementById('valRaw').innerText = lastRaw.toFixed(3);
             document.getElementById('valFilt').innerText = lastFilt.toFixed(3);
-            updateDisp = false; 
+            updateDisp = false;
         }
 
         // Spectrum
@@ -327,7 +327,7 @@ function loop() {
         const range = gMax - gMin;
 
         sctx.fillStyle='#05070a'; sctx.fillRect(0,0,400,220);
-        
+
         if (gMin < 0 && gMax > 0) {
             const zeroY = 220 - ((0 - gMin) / range * 220);
             sctx.strokeStyle='#1f242c'; sctx.beginPath(); sctx.moveTo(0, zeroY); sctx.lineTo(400, zeroY); sctx.stroke();

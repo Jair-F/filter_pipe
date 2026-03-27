@@ -40,7 +40,7 @@ class Pipeline:
     def _build_pipline(self, pipeline_str:str)->None:
         pipeline_str = pipeline_str.strip().replace(' ', '').replace('\t', '')
         pipe_chunks = pipeline_str.split('|')
-        
+
         for chunk in pipe_chunks:
             chunk = chunk.strip()
             filter_obj = self._build_filter_from_pipe(chunk)
@@ -57,4 +57,3 @@ class Pipeline:
             filter_obj:filters.Filter = filter_type()
             finder[filter_obj.regex_match_str()] = filter_type
         return finder
-
