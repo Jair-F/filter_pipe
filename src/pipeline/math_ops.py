@@ -54,7 +54,7 @@ class Multiply(PipeChunk):
 
 class Add(PipeChunk):
     @staticmethod
-    def pipe_from_args(add:float = 1.0) -> str:
+    def pipe_from_args(add:float = 0.0) -> str:
         return F"+{add}"
 
     def __init__(self, pipe_str:str = pipe_from_args()):
@@ -72,5 +72,28 @@ class Add(PipeChunk):
     @override
     def calc(self, value:float) -> float:
         result = value + self._add
+        super().calc(result)
+        return result
+
+class Subtract(PipeChunk):
+    @staticmethod
+    def pipe_from_args(subtract:float = 0.0) -> str:
+        return F"-{subtract}"
+
+    def __init__(self, pipe_str:str = pipe_from_args()):
+        super().__init__()
+        self._init_from_pipe_str(pipe_str)
+
+    def _init_from_pipe_str(self, pipe_str:str)->None:
+        super()._init_from_pipe_str(pipe_str)
+        self._subtract = self._extract_argument_float(pipe_str, r'\-')
+
+    @override
+    def regex_match_str(self) -> str:
+        return r'^\-(\d*.?\d+)$'
+
+    @override
+    def calc(self, value:float) -> float:
+        result = value - self._subtract
         super().calc(result)
         return result

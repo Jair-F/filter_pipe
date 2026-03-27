@@ -1,4 +1,4 @@
-from src.pipeline.math_ops import Add, Divide, Multiply
+from src.pipeline.math_ops import Add, Divide, Multiply, Subtract
 
 
 def test_math_divide_no_spaces():
@@ -45,3 +45,17 @@ def test_math_add_no_comma_no_spaces():
     pipe.calc(10)
 
     assert pipe.last_calc_value_float() == 244
+
+def test_math_subtract_with_comma_no_spaces():
+    pipe = Subtract('-2.2')
+
+    pipe.calc(10)
+
+    assert pipe.last_calc_value_float() == 7.8
+
+def test_math_subtract_no_comma_no_spaces():
+    pipe = Subtract('-234')
+
+    pipe.calc(10)
+
+    assert pipe.last_calc_value_float() == -224
