@@ -3,265 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modular Filter Pipeline</title>
+    <title>Modular Sensor & Signal Lab</title>
     <style>
-        :root { --bg: #0f1115; --card: #1a1d23; --accent: #00f2ff; --text: #e0e6ed; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        .container { width: 95%; max-width: 1000px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        :root { --bg: #0b0e14; --card: #161a23; --accent: #00f2ff; --warn: #ff4d4d; --text: #e0e6ed; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .layout { display: grid; grid-template-columns: 1fr 380px; gap: 20px; width: 100%; max-width: 1200px; }
         
-        /* Visuals */
-        .visual-section { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d333d; }
-        canvas { width: 100%; height: 300px; background: #000; border-radius: 8px; }
+        /* Visualizers */
+        .visuals { display: flex; flex-direction: column; gap: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d333d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        canvas { width: 100%; height: 200px; background: #000; border-radius: 8px; display: block; }
+        h3 { margin: 0 0 10px 0; font-weight: 400; color: var(--accent); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Pipeline */
-        .pipeline-section { background: var(--card); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #2d333d; }
-        .filter-node { background: #252a33; padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent); position: relative; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .pipeline { display: flex; flex-direction: column; gap: 15px; max-height: 85vh; overflow-y: auto; }
+        .filter-node { background: #212631; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .remove-btn { background: #ff4d4d; color: white; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 12px; }
+        /* Controls */
+        .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        select, input[type="number"] { background: #0b0e14; color: white; border: 1px solid #3d4451; padding: 6px; border-radius: 4px; }
         
-        /* Inputs */
-        .input-group { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        /* Custom Spinners for Gain/Params */
+        .num-ctrl { display: flex; align-items: center; gap: 5px; }
+        .spin-btn { background: #3d4451; color: white; border: none; width: 24px; height: 24px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .spin-btn:hover { background: var(--accent); color: #000; }
+
+        .input-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.8rem; }
         input[type="range"] { flex: 1; accent-color: var(--accent); }
-        input[type="number"], select { background: #121418; color: white; border: 1px solid #3d4451; padding: 5px; border-radius: 4px; font-size: 13px; }
-        
-        /* Global Controls */
-        .global-controls { grid-column: 1 / -1; background: var(--card); padding: 15px; border-radius: 12px; display: flex; gap: 20px; align-items: center; border: 1px solid #2d333d; }
-        
-        .btn-add { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
-        #startBtn { padding: 15px 40px; background: #fff; color: #000; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 1.1rem; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        .hidden { display: none; }
+
+        .btn-main { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #startBtn { padding: 20px 50px; font-size: 1.2rem; background: white; border-radius: 50px; box-shadow: 0 0 30px var(--accent); }
     </style>
 </head>
 <body>
 
-<div id="overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; display:flex; justify-content:center; align-items:center;">
-    <button id="startBtn">INITIALIZE SIGNAL CHAIN</button>
+<div id="overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:100; display:flex; justify-content:center; align-items:center;">
+    <button id="startBtn" class="btn-main">BOOT SIGNAL ENGINE</button>
 </div>
 
-<div class="container">
-    <div class="visual-section">
-        <h3 style="margin-top:0">Real-Time Spectral Analysis</h3>
-        <canvas id="visualizer"></canvas>
-        <div class="input-group" style="margin-top:15px">
-            <label>Master Output Gain:</label>
-            <input type="range" id="masterGain" min="0" max="1" step="0.01" value="0.5">
+<div class="layout">
+    <div class="visuals">
+        <div class="card">
+            <h3>Sensor Time-Series (Raw vs Filtered)</h3>
+            <canvas id="timeCanvas"></canvas>
+            <div class="input-row" style="justify-content: center; margin-top: 10px;">
+                <span style="color: #ff4d4d">■ Raw Sensor</span>
+                <span style="color: var(--accent); margin-left: 20px;">■ Filtered Signal</span>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Frequency Spectrogram</h3>
+            <canvas id="freqCanvas"></canvas>
+        </div>
+        <div class="card">
+            <div class="input-row">
+                <label>Sensor Jumping (Base Noise):</label>
+                <input type="range" id="noiseVol" min="0" max="1" step="0.01" value="0.2">
+                <div class="num-ctrl">
+                    <button class="spin-btn" onclick="adj('noiseVol', -0.05)">-</button>
+                    <input type="number" id="noiseVolNum" step="0.01" style="width:50px">
+                    <button class="spin-btn" onclick="adj('noiseVol', 0.05)">+</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="pipeline-section">
-        <h3 style="margin-top:0">Filter Pipeline</h3>
-        <div id="pipelineNodes"></div>
-        <button class="btn-add" id="addFilter">+ Add Filter Stage</button>
-        <p style="font-size: 11px; color: #777;">Signal flows Top &rarr; Bottom</p>
-    </div>
-
-    <div class="global-controls">
-        <div style="flex:1">
-            <label style="font-size:12px; display:block">White Noise Level</label>
-            <input type="range" id="noiseVol" min="0" max="0.5" step="0.01" value="0.1" style="width:100%">
-        </div>
-        <div style="flex:1">
-            <label style="font-size:12px; display:block">Interference Freq (Hz)</label>
-            <input type="number" id="intFreq" value="440" style="width:100%">
-            <input type="range" id="intRange" min="20" max="5000" value="440" style="width:100%">
+    <div class="pipeline">
+        <div class="card">
+            <h3>Signal Pipeline</h3>
+            <div id="nodes"></div>
+            <button class="btn-main" id="addNode" style="background: #2d333d; color: white;">+ ADD FILTER STAGE</button>
         </div>
     </div>
 </div>
 
 <script>
-/** FILTER LOGIC PORTED FROM YOUR PYTHON CLASSES  **/
-class LowPass {
-    constructor(alpha) { this.alpha = alpha; this.lastVal = 0; }
-    calc(v) { this.lastVal = (1 - this.alpha) * this.lastVal + this.alpha * v; return this.lastVal; }
+/** * TRANSLATED LOGIC (Exact behavior from Python)
+ */
+class Filter {
+    constructor() { this._last = 0; }
+    calc(val) { this._last = val; return val; }
+    last() { return this._last; }
 }
-class HighPass {
-    constructor(alpha) { this.lpf = new LowPass(alpha); }
-    calc(v) { return v - this.lpf.calc(v); }
-}
-class MovingAverage {
-    constructor(n) { this.n = Math.max(1, Math.round(n)); this.buf = []; }
-    calc(v) {
-        this.buf.push(v);
+
+class MovingAverage extends Filter {
+    constructor(n=10) { super(); this.n = Math.max(1, Math.round(n)); this.buf = []; }
+    calc(val) {
+        this.buf.push(val);
         if(this.buf.length > this.n) this.buf.shift();
-        return this.buf.reduce((a,b)=>a+b, 0) / this.buf.length;
+        const res = this.buf.reduce((a,b)=>a+b, 0) / this.buf.length;
+        return super.calc(res);
     }
 }
-class BandPass {
-    constructor(low, high) { this.lpf = new LowPass(low); this.hpf = new HighPass(high); }
-    calc(v) { return this.hpf.calc(this.lpf.calc(v)); }
-}
-class Notch {
-    constructor(low, high) { this.bpf = new BandPass(low, high); }
-    calc(v) { return v - this.bpf.calc(v); }
+
+class LowPass extends Filter {
+    constructor(alpha=0.1) { super(); this.a = alpha; }
+    calc(val) {
+        const res = (1 - this.a) * this.last() + this.a * val;
+        return super.calc(res);
+    }
 }
 
-// Global Engine State
-let audioCtx, analyser, osc, noiseGainNode, outGainNode;
-let activePipeline = []; // Holds objects: { id, type, params[], instances[] }
+class HighPass extends Filter {
+    constructor(alpha=0.1) { super(); this.lp = new LowPass(alpha); }
+    calc(val) {
+        const lpf = this.lp.calc(val);
+        const res = val - lpf;
+        return super.calc(res);
+    }
+}
 
-function initAudio() {
+class BandPass extends Filter {
+    constructor(low, high) { super(); this.lp = new LowPass(low); this.hp = new HighPass(high); }
+    calc(val) {
+        const res = this.hp.calc(this.lp.calc(val));
+        return super.calc(res);
+    }
+}
+
+class Notch extends Filter {
+    constructor(low, high) { super(); this.bp = new BandPass(low, high); }
+    calc(val) {
+        const res = val - this.bp.calc(val);
+        return super.calc(res);
+    }
+}
+
+class HighCut extends Filter {
+    constructor(cut=0.1) { super(); this.cut = cut; }
+    calc(val) { return super.calc(Math.min(this.cut, val)); }
+}
+
+class LowCut extends Filter {
+    constructor(cut=0.1) { super(); this.cut = cut; }
+    calc(val) { return super.calc(Math.max(this.cut, val)); }
+}
+
+// Global state
+let audioCtx, analyser, chain = [];
+let historyRaw = new Float32Array(200);
+let historyFilt = new Float32Array(200);
+
+function init() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
     const processor = audioCtx.createScriptProcessor(2048, 1, 1);
     
-    osc = audioCtx.createOscillator();
-    const oscGain = audioCtx.createGain();
-    oscGain.gain.value = 0.1;
-    
-    noiseGainNode = audioCtx.createGain();
-    noiseGainNode.gain.value = 0.1;
-
-    analyser = audioCtx.createAnalyser();
-    outGainNode = audioCtx.createGain();
-    outGainNode.gain.value = 0.5;
-
     processor.onaudioprocess = (e) => {
-        let input = e.inputBuffer.getChannelData(0);
-        let output = e.outputBuffer.getChannelData(0);
-        let nVol = noiseGainNode.gain.value;
+        const out = e.outputBuffer.getChannelData(0);
+        const noiseBase = parseFloat(document.getElementById('noiseVol').value);
+        
+        for (let i = 0; i < out.length; i++) {
+            // Simulated sensor jump (Randomized)
+            let raw = (Math.random() * 2 - 1) * noiseBase;
+            let filtered = raw;
 
-        for (let i = 0; i < input.length; i++) {
-            let sample = input[i] + (Math.random() * 2 - 1) * nVol;
-            
-            // PIPE THROUGH THE CUSTOM CHAIN
-            for (let node of activePipeline) {
-                if(node.instance) {
-                    sample = node.instance.calc(sample);
-                }
+            for (let node of chain) {
+                if(node.inst) filtered = node.inst.calc(filtered);
             }
-            output[i] = sample;
+            out[i] = filtered;
+            
+            // Capture for time-graph (slowed down for visibility)
+            if (i % 32 === 0) {
+                historyRaw.set(historyRaw.subarray(1));
+                historyRaw[199] = raw;
+                historyFilt.set(historyFilt.subarray(1));
+                historyFilt[199] = filtered;
+            }
         }
     };
 
-    osc.connect(oscGain); oscGain.connect(processor);
-    processor.connect(analyser); analyser.connect(outGainNode);
-    outGainNode.connect(audioCtx.destination);
-    osc.start();
+    processor.connect(analyser);
+    analyser.connect(audioCtx.destination);
     draw();
 }
 
-// UI Management
-let nodeIdCounter = 0;
-const pipelineContainer = document.getElementById('pipelineNodes');
-
-function addFilterNode() {
-    const id = nodeIdCounter++;
-    const nodeDiv = document.createElement('div');
-    nodeDiv.className = 'filter-node';
-    nodeDiv.id = `node-${id}`;
-    nodeDiv.innerHTML = `
+// UI Bridge
+function addNode() {
+    const id = Date.now();
+    const div = document.createElement('div');
+    div.className = 'filter-node';
+    div.id = `node-${id}`;
+    div.innerHTML = `
         <div class="node-header">
-            <select class="type-sel">
-                <option value="lpass">Low Pass</option>
-                <option value="hpass">High Pass</option>
-                <option value="mavg">Moving Avg</option>
+            <select onchange="updateNode(${id}, 'type', this.value)">
+                <option value="lpass">Low Pass (α)</option>
+                <option value="hpass">High Pass (α)</option>
+                <option value="mavg">Moving Average (N)</option>
                 <option value="bpass">Band Pass</option>
                 <option value="notch">Notch</option>
+                <option value="hcut">High Cut (Clip)</option>
+                <option value="lcut">Low Cut (Floor)</option>
             </select>
-            <button class="remove-btn" onclick="removeNode(${id})">X</button>
+            <button onclick="removeNode(${id})" style="background:none; border:none; color:var(--warn); cursor:pointer;">✕</button>
         </div>
-        <div class="inputs-container"></div>
+        <div id="inputs-${id}"></div>
     `;
-    pipelineContainer.appendChild(nodeDiv);
-    
-    const nodeData = { id, type: 'lpass', params: [0.1, 0.5], instance: null };
-    activePipeline.push(nodeData);
-
-    const typeSel = nodeDiv.querySelector('.type-sel');
-    typeSel.onchange = (e) => { nodeData.type = e.target.value; renderNodeInputs(id); };
-    
-    renderNodeInputs(id);
+    document.getElementById('nodes').appendChild(div);
+    chain.push({ id, type: 'lpass', p: [0.1, 0.5], inst: null });
+    updateNode(id);
 }
 
-function renderNodeInputs(id) {
-    const node = activePipeline.find(n => n.id === id);
-    const container = document.querySelector(`#node-${id} .inputs-container`);
+function updateNode(id, key, val) {
+    const node = chain.find(n => n.id === id);
+    if(key) node[key] = val;
+    
+    const container = document.getElementById(`inputs-${id}`);
     container.innerHTML = '';
-
-    const createInput = (label, index, isInt = false) => {
-        const div = document.createElement('div');
-        div.className = 'input-group';
-        const step = isInt ? 1 : 0.0001;
-        const min = isInt ? 1 : 0.0001;
-        const max = isInt ? 1000 : 1.0;
-        
-        div.innerHTML = `
-            <label style="font-size:10px; width:40px">${label}</label>
-            <input type="range" min="${min}" max="${max}" step="${step}" value="${node.params[index]}">
-            <input type="number" min="${min}" max="${max}" step="${step}" value="${node.params[index]}" style="width:60px">
+    
+    const addParam = (label, idx, isInt=false) => {
+        const row = document.createElement('div');
+        row.className = 'input-row';
+        const step = isInt ? 1 : 0.01;
+        row.innerHTML = `
+            <label style="width:60px">${label}</label>
+            <input type="range" min="${isInt?1:0}" max="${isInt?200:2}" step="${step}" value="${node.p[idx]}" 
+                oninput="this.nextElementSibling.querySelector('input').value = this.value; syncInst(${id}, ${idx}, this.value)">
+            <div class="num-ctrl">
+                <button class="spin-btn" onclick="spin(${id}, ${idx}, -${step})">-</button>
+                <input type="number" value="${node.p[idx]}" step="${step}" style="width:50px" 
+                    oninput="this.parentElement.previousElementSibling.value = this.value; syncInst(${id}, ${idx}, this.value)">
+                <button class="spin-btn" onclick="spin(${id}, ${idx}, ${step})">+</button>
+            </div>
         `;
-        
-        const r = div.querySelector('input[type="range"]');
-        const n = div.querySelector('input[type="number"]');
-        const update = (val) => {
-            node.params[index] = parseFloat(val);
-            r.value = val; n.value = val;
-            rebuildInstance(node);
-        };
-        r.oninput = (e) => update(e.target.value);
-        n.oninput = (e) => update(e.target.value);
-        container.appendChild(div);
+        container.appendChild(row);
     };
 
-    if (node.type === 'lpass' || node.type === 'hpass') {
-        createInput('α', 0);
-    } else if (node.type === 'mavg') {
-        createInput('N', 0, true);
-    } else {
-        createInput('Low α', 0);
-        createInput('High α', 1);
-    }
-    rebuildInstance(node);
+    if(['lpass','hpass','hcut','lcut'].includes(node.type)) addParam('Val', 0);
+    else if(node.type === 'mavg') addParam('N', 0, true);
+    else { addParam('Low', 0); addParam('High', 1); }
+    
+    syncInst(id);
 }
 
-function rebuildInstance(node) {
-    const p = node.params;
-    if (node.type === 'lpass') node.instance = new LowPass(p[0]);
-    if (node.type === 'hpass') node.instance = new HighPass(p[0]);
-    if (node.type === 'mavg')  node.instance = new MovingAverage(p[0]);
-    if (node.type === 'bpass') node.instance = new BandPass(p[0], p[1]);
-    if (node.type === 'notch') node.instance = new Notch(p[0], p[1]);
+function syncInst(id, idx, val) {
+    const node = chain.find(n => n.id === id);
+    if(idx !== undefined) node.p[idx] = parseFloat(val);
+    
+    const p = node.p;
+    if(node.type === 'lpass') node.inst = new LowPass(p[0]);
+    if(node.type === 'hpass') node.inst = new HighPass(p[0]);
+    if(node.type === 'mavg')  node.inst = new MovingAverage(p[0]);
+    if(node.type === 'bpass') node.inst = new BandPass(p[0], p[1]);
+    if(node.type === 'notch') node.inst = new Notch(p[0], p[1]);
+    if(node.type === 'hcut')  node.inst = new HighCut(p[0]);
+    if(node.type === 'lcut')  node.inst = new LowCut(p[0]);
+}
+
+function spin(id, idx, delta) {
+    const node = chain.find(n => n.id === id);
+    const newVal = Math.max(0, parseFloat(node.p[idx]) + delta);
+    const container = document.getElementById(`inputs-${id}`);
+    const inputNum = container.querySelectorAll('input[type="number"]')[idx];
+    const inputRange = container.querySelectorAll('input[type="range"]')[idx];
+    inputNum.value = newVal.toFixed(3);
+    inputRange.value = newVal;
+    syncInst(id, idx, newVal);
+}
+
+function adj(id, delta) {
+    const el = document.getElementById(id);
+    const num = document.getElementById(id+'Num');
+    const val = Math.max(0, parseFloat(el.value) + delta);
+    el.value = val; num.value = val.toFixed(2);
 }
 
 window.removeNode = (id) => {
-    activePipeline = activePipeline.filter(n => n.id !== id);
+    chain = chain.filter(n => n.id !== id);
     document.getElementById(`node-${id}`).remove();
 };
 
-// Global Events
-document.getElementById('addFilter').onclick = addFilterNode;
-document.getElementById('startBtn').onclick = () => {
-    initAudio();
-    document.getElementById('overlay').remove();
-};
-
-const syncGlobal = (rId, nId, cb) => {
-    const r = document.getElementById(rId);
-    const n = document.getElementById(nId);
-    r.oninput = (e) => { n.value = e.target.value; cb(e.target.value); };
-    n.oninput = (e) => { r.value = e.target.value; cb(e.target.value); };
-};
-
-syncGlobal('intRange', 'intFreq', (v) => { if(osc) osc.frequency.value = v; });
-document.getElementById('noiseVol').oninput = (e) => { if(noiseGainNode) noiseGainNode.gain.value = e.target.value; };
-document.getElementById('masterGain').oninput = (e) => { if(outGainNode) outGainNode.gain.value = e.target.value; };
+document.getElementById('noiseVol').oninput = (e) => document.getElementById('noiseVolNum').value = e.target.value;
+document.getElementById('addNode').onclick = addNode;
+document.getElementById('startBtn').onclick = () => { init(); document.getElementById('overlay').remove(); };
 
 function draw() {
-    const canvas = document.getElementById('visualizer');
-    const ctx = canvas.getContext('2d');
-    const data = new Uint8Array(analyser.frequencyBinCount);
+    const tCtx = document.getElementById('timeCanvas').getContext('2d');
+    const fCtx = document.getElementById('freqCanvas').getContext('2d');
+    const fData = new Uint8Array(analyser.frequencyBinCount);
+
     const render = () => {
         requestAnimationFrame(render);
-        analyser.getByteFrequencyData(data);
-        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const bw = (canvas.width / data.length) * 2.5;
-        let x = 0;
-        for (let i = 0; i < data.length; i++) {
-            let h = (data[i] / 255) * canvas.height;
-            ctx.fillStyle = `hsl(${180 + (data[i]/2)}, 100%, 50%)`;
-            ctx.fillRect(x, canvas.height - h, bw, h);
-            x += bw + 1;
+        
+        // Time Domain
+        tCtx.fillStyle = '#000'; tCtx.fillRect(0,0,400,200);
+        tCtx.lineWidth = 2;
+        
+        const drawPath = (data, color) => {
+            tCtx.beginPath(); tCtx.strokeStyle = color;
+            for(let i=0; i<200; i++) {
+                const x = i * 2;
+                const y = 100 - (data[i] * 80);
+                if(i===0) tCtx.moveTo(x,y); else tCtx.lineTo(x,y);
+            }
+            tCtx.stroke();
+        };
+        drawPath(historyRaw, '#ff4d4d66');
+        drawPath(historyFilt, '#00f2ff');
+
+        // Frequency Domain
+        analyser.getByteFrequencyData(fData);
+        fCtx.fillStyle = '#000'; fCtx.fillRect(0,0,400,200);
+        for(let i=0; i<fData.length; i++) {
+            const h = (fData[i]/255) * 200;
+            fCtx.fillStyle = `hsl(${180+(fData[i]/2)}, 100%, 50%)`;
+            fCtx.fillRect(i*2, 200-h, 2, h);
         }
     };
     render();
