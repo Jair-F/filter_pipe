@@ -5,18 +5,16 @@ import collections
 
 import re
 
+from src.pipeline.pipe import PipeChunk
 
-class Filter:
-    def __init__(self):
-        self._last_calc_value = 0
 
-    def valid_pipe(self, pipe:str)->bool:
-        matches = re.match(self.regex_match_str(), pipe)
-        return matches is not None
-
+class Filter(PipeChunk):
     @staticmethod
     def pipe_from_args() -> str:
         return F"filter()"
+
+    def __init__(self):
+        super().__init__()
 
     def _extract_argument_float(self, pipe_str:str, argument:str)->float:
         argument += r'\='
@@ -29,20 +27,7 @@ class Filter:
         return float(argument)
 
     def regex_match_str(self) -> str:
-        return r'^filter\(\)$' # https://regex101.com/
-
-    def _init_from_pipe_str(self, pipe_str:str)->None:
-        if not self.valid_pipe(pipe_str):
-            print(F"pipe: {pipe_str} does not match {self.regex_match_str()} - exiting", file=sys.stderr)
-            sys.exit(-1)
-
-    @abc.abstractmethod
-    def calc(self, value:float) -> float:
-        self._last_calc_value = value
-        return value
-
-    def last_calc_value(self) -> float:
-        return self._last_calc_value
+        return r'^filter\(\)$'
 
 
 class MovingAverage(Filter):
@@ -90,7 +75,7 @@ class LowPass(Filter):
 
     @typing.override
     def calc(self, value:float) -> float:
-        result = (1 - self._alpha) * self.last_calc_value() + self._alpha * value
+        result = (1 - self._alpha) * self.last_calc_value_float() + self._alpha * value
         super().calc(result)
         return result
 

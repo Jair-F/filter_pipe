@@ -4,12 +4,13 @@ import sys
 from typing import Any
 
 from src.pipeline import filters
+from src.pipeline.pipe import PipeChunk
 
 
 class Pipeline:
     def __init__(self, pipeline_str:str):
         self._filters:dict[str, filters.Filter] = self._find_filter_classes()
-        self._pipeline:list[filters.Filter] = []
+        self._pipeline:list[PipeChunk] = []
         self._last_calc_value = 0
 
         self._build_pipline(pipeline_str)
@@ -21,7 +22,7 @@ class Pipeline:
             self._last_calc_value = result
         return result
 
-    def get_last_calc_value_float(self)->float:
+    def last_calc_value_float(self)->float:
         return self._last_calc_value
 
     def _is_valid_filter_pipe(self, pipe_chunk:str)->bool:
