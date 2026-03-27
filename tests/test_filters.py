@@ -1,7 +1,7 @@
 
 import pytest
 
-from src.filters.filters import BandPass, HighPass, LowPass, MovingAverage
+from src.filters.filters import BandPass, HighPass, LowPass, MovingAverage, Notch
 
 
 def test_moving_average_filter_length():
@@ -84,3 +84,22 @@ def test_bandpass_big_alphas():
         filter.calc(value)
     
     assert filter.last_calc_value() == pytest.approx(0.00206, rel=0.01)
+
+def test_notch():
+    input_values = [10, 13, 50, 86, 3, 7, 18]
+    filter = Notch(low_alpha=0.08, high_alpha=0.33)
+
+    for value in input_values:
+        filter.calc(value)
+    
+    assert filter.last_calc_value() == pytest.approx(16.04, rel=0.01)
+
+def test_notch_big_alphas():
+    input_values = [10, 13, 50, 86, 3, 7, 18]
+    filter = Notch(low_alpha=0.001, high_alpha=0.89)
+
+    for value in input_values:
+        filter.calc(value)
+    
+    assert filter.last_calc_value() == pytest.approx(18, rel=0.01)
+

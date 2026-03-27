@@ -64,7 +64,6 @@ class HighPass(Filter):
     def __init__(self, alpha=0.1):
         super().__init__()
         self._low_pass = LowPass(alpha)
-        self._alpha = alpha
 
     @override
     def regex_match_str(self) -> str:
@@ -82,8 +81,6 @@ class BandPass(Filter):
         super().__init__()
         self._low_pass = LowPass(low_alpha)
         self._high_pass = HighPass(high_alpha)
-        self._low_alpha = low_alpha
-        self._high_alpha = high_alpha
 
     @override
     def regex_match_str(self) -> str:
@@ -93,5 +90,21 @@ class BandPass(Filter):
     def calc(self, value:float) -> float:
         lpf = self._low_pass.calc(value)
         result = self._high_pass.calc(lpf)
+        super().calc(result)
+        return result
+
+class Notch(Filter):
+    def __init__(self, low_alpha=0.1, high_alpha=0.5):
+        super().__init__()
+        self._band_pass = BandPass(low_alpha=low_alpha, high_alpha=high_alpha)
+
+    @override
+    def regex_match_str(self) -> str:
+        return r"^bpass\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$"
+    
+    @override    
+    def calc(self, value:float) -> float:
+        band_to_remove = self._band_pass.calc(value)
+        result = value - band_to_remove
         super().calc(result)
         return result
