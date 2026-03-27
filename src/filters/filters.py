@@ -81,7 +81,7 @@ class BandPass(Filter):
     def __init__(self, low_alpha=0.1, high_alpha=0.5):
         super().__init__()
         self._low_pass = LowPass(low_alpha)
-        self._high_pass = LowPass(high_alpha)
+        self._high_pass = HighPass(high_alpha)
         self._low_alpha = low_alpha
         self._high_alpha = high_alpha
 

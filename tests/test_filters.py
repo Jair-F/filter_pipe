@@ -69,12 +69,12 @@ def test_highpass_big_alpha_plus_output():
 
 def test_bandpass():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = BandPass(low_alpha=0.08, high_alpha=0.56)
+    filter = BandPass(low_alpha=0.08, high_alpha=0.33)
 
     for value in input_values:
         filter.calc(value)
     
-    assert filter.last_calc_value() == pytest.approx(11.11, rel=0.01)
+    assert filter.last_calc_value() == pytest.approx(1.955, rel=0.01)
 
 def test_bandpass_big_alphas():
     input_values = [10, 13, 50, 86, 3, 7, 18]
@@ -83,4 +83,4 @@ def test_bandpass_big_alphas():
     for value in input_values:
         filter.calc(value)
     
-    assert filter.last_calc_value() == pytest.approx(0.184, rel=0.01)
+    assert filter.last_calc_value() == pytest.approx(0.00206, rel=0.01)
