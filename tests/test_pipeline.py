@@ -1,5 +1,3 @@
-
-
 import pytest
 
 from src.pipeline.pipeline import Pipeline
@@ -14,12 +12,14 @@ def test_pipeline_one_filter_moving_average():
 
     assert pipe.last_calc_value_float() == 8
 
+
 def test_pipeline_two_filters_moving_average_low_pass_single_input_value():
     pipe = Pipeline(' mavg(n=10) | lpass(alpha=0.2) ')
 
     pipe.calc(2134)
 
     assert pipe.last_calc_value_float() == 426.8
+
 
 def test_pipeline_with_spaces_and_tabs():
     pipe = Pipeline(' \t  mavg(n=10)   |  \t  lpass(alpha=0.2) \t ')
@@ -28,12 +28,14 @@ def test_pipeline_with_spaces_and_tabs():
 
     assert pipe.last_calc_value_float() == 426.8
 
+
 def test_pipeline_without_any_space():
     pipe = Pipeline('mavg(n=10)|lpass(alpha=0.2)')
 
     pipe.calc(2134)
 
     assert pipe.last_calc_value_float() == 426.8
+
 
 def test_pipeline_two_filters_moving_average_low_pass_multiple_input_values():
     input_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -44,12 +46,16 @@ def test_pipeline_two_filters_moving_average_low_pass_multiple_input_values():
 
     assert pipe.last_calc_value_float() == pytest.approx(3.6610612736000006)
 
+
 def test_pipeline_with_math_divide_and_filters_combined():
-    pipe = Pipeline('/2|hpass(alpha=10)|lpass(alpha=0.2)|bpass(low_alpha=0.2,high_alpha=0.3)')
+    pipe = Pipeline(
+        '/2|hpass(alpha=10)|lpass(alpha=0.2)|bpass(low_alpha=0.2,high_alpha=0.3)',
+    )
 
     pipe.calc(2134)
 
     assert pipe.last_calc_value_float() == -268.884
+
 
 def test_pipeline_with_math_multiply_and_filters_combined():
     pipe = Pipeline('/2|notch(low_alpha=0.25,high_alpha=0.1)')
@@ -58,10 +64,12 @@ def test_pipeline_with_math_multiply_and_filters_combined():
 
     assert pipe.last_calc_value_float() == 826.925
 
+
 def test_pipeline_with_math_with_filters_combined():
     pipe = Pipeline('+2.3 | -4.3 | *-12.5 | / -2 | lcut(cut=-123)')
     pipe.calc(-124)
     assert pipe.last_calc_value_float() == -123
+
 
 def test_pipeline_with_math_with_filters_combined_converting_to_str():
     pipe = Pipeline('+2.3 | -4.3 | *-12.5 | / -2 | hcut(cut=-123.345) | str(ndigits=2)')

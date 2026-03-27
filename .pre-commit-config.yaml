@@ -1,16 +1,58 @@
-exclude: src/jair_turtlesim/test/|src/jair_turtlesim/setup.py
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-        - id: trailing-whitespace
-        - id: end-of-file-fixer
-        - id: mixed-line-ending
-          args: [--fix=lf]
-        - id: check-yaml
-          args: [--unsafe]
-        - id: debug-statements
-        - id: double-quote-string-fixer
-        - id: requirements-txt-fixer
-        - id: check-added-large-files
-          args: ["--maxkb=512"]
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v6.0.0
+      hooks:
+          - id: trailing-whitespace
+          - id: end-of-file-fixer
+          - id: mixed-line-ending
+            args: [--fix=lf]
+          - id: check-yaml
+            args: [--unsafe]
+          - id: debug-statements
+          - id: double-quote-string-fixer
+          - id: requirements-txt-fixer
+          - id: check-added-large-files
+            args: ["--maxkb=512"]
+    - repo: https://github.com/asottile/reorder-python-imports
+      rev: v3.16.0
+      hooks:
+          - id: reorder-python-imports
+    - repo: https://github.com/asottile/add-trailing-comma
+      rev: v4.0.0
+      hooks:
+          - id: add-trailing-comma
+    - repo: https://github.com/asottile/pyupgrade # upgrades old style python code to newver version
+      rev: v3.21.2
+      hooks:
+          - id: pyupgrade
+            args: [--py39-plus]
+    - repo: https://github.com/PyCQA/autoflake
+      rev: v2.3.3
+      hooks:
+          - id: autoflake
+            args: [--remove-all-unused-imports, --in-place]
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.15.8
+      hooks:
+        - id: ruff
+          args: [ --fix ]
+        - id: ruff-format
+    # - repo: https://github.com/pre-commit/mirrors-mypy
+    #   rev: v1.18.2
+    #   hooks:
+    #       - id: mypy
+    #         args: [
+    #                 "--ignore-missing-imports",
+    #                 "--allow-untyped-decorators", # remove if not needed
+    #                 "--strict",
+    #                 "--install-types",
+    #                 "--non-interactive",
+    #             ]
+    # - repo: https://github.com/PyCQA/pylint
+    #   rev: v3.3.0
+    #   hooks:
+    #       - id: pylint
+    #         args: [
+    #                 "--disable=C0114", # missing-module-docstring
+    #                 "--disable=C0116", # missing-function-docstring
+    #             ]

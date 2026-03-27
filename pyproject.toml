@@ -19,3 +19,13 @@ Repository = "https://github.com/Jair-F/filter_pipe"
 [tool.setuptools_scm]
 # You can leave this table empty; setuptools-scm uses smart defaults.
 # It automatically detects the version from your Git tags.
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# This enables the linting rules for quotes (the 'Q' group)
+#select = ["E", "F", "UP", "I", "Q"]
+
+[tool.ruff.format]
+# This tells the FORMATTER to use single quotes
+quote-style = "single"

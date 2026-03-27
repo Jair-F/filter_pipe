@@ -1,7 +1,14 @@
-
 import pytest
 
-from src.pipeline.filters import BandPass, HighCut, HighPass, LowCut, LowPass, MovingAverage, Notch, ToString
+from src.pipeline.filters import BandPass
+from src.pipeline.filters import HighCut
+from src.pipeline.filters import HighPass
+from src.pipeline.filters import LowCut
+from src.pipeline.filters import LowPass
+from src.pipeline.filters import MovingAverage
+from src.pipeline.filters import Notch
+from src.pipeline.filters import ToString
+
 
 def test_to_string_ndigits_eight():
     pipe = ToString('str(ndigits=8)')
@@ -11,6 +18,7 @@ def test_to_string_ndigits_eight():
     assert result == '123.12312312'
     assert pipe.last_calc_value_float() == 123.12312312
 
+
 def test_to_string_ndigits_zero():
     pipe = ToString('str(ndigits=0)')
 
@@ -18,6 +26,7 @@ def test_to_string_ndigits_zero():
 
     assert result == '123'
     assert pipe.last_calc_value_float() == 123
+
 
 def test_to_string_no_ndigits_parameter():
     pipe = ToString('str()')
@@ -27,6 +36,7 @@ def test_to_string_no_ndigits_parameter():
     assert result == '123'
     assert pipe.last_calc_value_float() == 123
 
+
 def test_to_string_ndigits_two():
     pipe = ToString('str(ndigits=2)')
 
@@ -34,6 +44,7 @@ def test_to_string_ndigits_two():
 
     assert result == '123.12'
     assert pipe.last_calc_value_float() == 123.12
+
 
 def test_moving_average_filter_length():
     input_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -44,6 +55,7 @@ def test_moving_average_filter_length():
 
     assert filter.last_calc_value_float() == 8
 
+
 def test_moving_average_filter():
     input_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     filter = MovingAverage('mavg(n=11)')
@@ -52,6 +64,7 @@ def test_moving_average_filter():
         filter.calc(value)
 
     assert filter.last_calc_value_float() == 5.5
+
 
 def test_lowpass():
     input_values = [10, 13, 50, 86, 3, 7, 18]
@@ -62,6 +75,7 @@ def test_lowpass():
 
     assert filter.last_calc_value_float() == pytest.approx(8, rel=0.01)
 
+
 def test_lowpass_big_alpha():
     input_values = [10, 13, 50, 86, 3, 7, 18]
     filter = LowPass('lpass(alpha=0.34)')
@@ -70,6 +84,7 @@ def test_lowpass_big_alpha():
         filter.calc(value)
 
     assert filter.last_calc_value_float() == pytest.approx(20.6, rel=0.001)
+
 
 def test_highpass():
     input_values = [10, 13, 50, 86, 3, 7, 18]
@@ -80,6 +95,7 @@ def test_highpass():
 
     assert filter.last_calc_value_float() == pytest.approx(10.03, rel=0.001)
 
+
 def test_highpass_big_alpha_minus_output():
     input_values = [10, 13, 50, 86, 3, 7, 18]
     filter = HighPass('hpass(alpha=0.34)')
@@ -88,6 +104,7 @@ def test_highpass_big_alpha_minus_output():
         filter.calc(value)
 
     assert filter.last_calc_value_float() == pytest.approx(-2.6, rel=0.001)
+
 
 def test_highpass_big_alpha_plus_output():
     input_values = [110, 13, 50, 20, 3, 7, 49]
@@ -98,6 +115,7 @@ def test_highpass_big_alpha_plus_output():
 
     assert filter.last_calc_value_float() == pytest.approx(21.5, rel=0.001)
 
+
 def test_bandpass():
     input_values = [10, 13, 50, 86, 3, 7, 18]
     filter = BandPass('bpass(low_alpha=0.08, high_alpha=0.33)')
@@ -106,6 +124,7 @@ def test_bandpass():
         filter.calc(value)
 
     assert filter.last_calc_value_float() == pytest.approx(1.955, rel=0.01)
+
 
 def test_bandpass_big_alphas():
     input_values = [10, 13, 50, 86, 3, 7, 18]
@@ -116,6 +135,7 @@ def test_bandpass_big_alphas():
 
     assert filter.last_calc_value_float() == pytest.approx(0.00206, rel=0.01)
 
+
 def test_notch():
     input_values = [10, 13, 50, 86, 3, 7, 18]
     filter = Notch('notch(low_alpha=0.08, high_alpha=0.33)')
@@ -124,6 +144,7 @@ def test_notch():
         filter.calc(value)
 
     assert filter.last_calc_value_float() == pytest.approx(16.04, rel=0.01)
+
 
 def test_notch_big_alphas():
     input_values = [10, 13, 50, 86, 3, 7, 18]
@@ -134,16 +155,19 @@ def test_notch_big_alphas():
 
     assert filter.last_calc_value_float() == pytest.approx(18, rel=0.01)
 
+
 def test_highcut_cutting():
     value = 35
     filter = HighCut('hcut(cut=20)')
 
     assert filter.calc(value) == 20
 
+
 def test_highcut_cutting_minus():
     filter = HighCut('hcut(cut=-888)')
 
     assert filter.calc(-800) == -888
+
 
 def test_highcut_not_cutting():
     value = 16
@@ -151,11 +175,13 @@ def test_highcut_not_cutting():
 
     assert filter.calc(value) == value
 
+
 def test_highcut_cutting_minus_with_comma():
     value = 15
     filter = HighCut('hcut(cut=-20.1)')
 
     assert filter.calc(value) == -20.1
+
 
 def test_lowcut_cutting():
     value = 16
@@ -163,17 +189,20 @@ def test_lowcut_cutting():
 
     assert filter.calc(value) == 20
 
+
 def test_lowcut_cutting_minus_with_comma():
     value = -50.3
     filter = LowCut('lcut(cut=-20.1234)')
 
     assert filter.calc(value) == -20.1234
 
+
 def test_lowcut_not_cutting():
     value = 35
     filter = LowCut('lcut(cut=20)')
 
     assert filter.calc(value) == value
+
 
 def test_lowcut_cutting_minus():
     filter = LowCut('lcut(cut=-20)')
