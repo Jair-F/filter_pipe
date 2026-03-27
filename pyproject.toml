@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm>=7.0", "twine", "build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "filter_pipe"
+dynamic = ["version"]
+readme = "README.md"
+authors = [
+    {name = "Jair"},
+]
+description = "Build and expose flexible calculation pipelines that give the end user total control over dynamic variables and data logic."
+requires-python = ">=3.8"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/Jair-F/filter_pipe"
+
+[tool.setuptools_scm]
+# You can leave this table empty; setuptools-scm uses smart defaults.
+# It automatically detects the version from your Git tags.

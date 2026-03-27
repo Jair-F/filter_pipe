@@ -1,0 +1,16 @@
+exclude: src/jair_turtlesim/test/|src/jair_turtlesim/setup.py
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+        - id: trailing-whitespace
+        - id: end-of-file-fixer
+        - id: mixed-line-ending
+          args: [--fix=lf]
+        - id: check-yaml
+          args: [--unsafe]
+        - id: debug-statements
+        - id: double-quote-string-fixer
+        - id: requirements-txt-fixer
+        - id: check-added-large-files
+          args: ["--maxkb=512"]

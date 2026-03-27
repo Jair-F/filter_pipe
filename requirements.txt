@@ -1,0 +1,4 @@
+build
+pre-commit
+pytest
+setuptools-scm
