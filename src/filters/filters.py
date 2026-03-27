@@ -19,20 +19,18 @@ class Filter:
         return F"filter()"
 
     def _extract_argument_float(self, pipe_str:str, argument:str)->float:
-        argument += '='
+        argument += r'\='
         
         start_pos = re.search(argument, pipe_str).end()
         argument = pipe_str[start_pos:]
-        end_pos = re.search(r'[,)]{1}', argument).end() - 1
+        end_pos = re.search(r'[\,\)]{1}', argument).end() - 1
 
         argument = argument[:end_pos]
         return float(argument)
 
     def regex_match_str(self) -> str:
-        return r"^filter\(n\=[0-9]+\)$" # https://regex101.com/
+        return r"^filter\(\)$" # https://regex101.com/
 
-    def __repr__(self = None) -> str:
-        return F"filter()"
 
     def _init_from_pipe_str(self, pipe_str:str)->None:
         if not self.valid_pipe(pipe_str):
