@@ -14,7 +14,7 @@ class Filter:
         return matches is not None
 
     def regex_match_str(self) -> str:
-        return r"^filter\(n\=[0-9]+\)$"
+        return r"^filter\(n\=[0-9]+\)$" # https://regex101.com/
 
     def __repr__(self = None) -> str:
         return F"filter()"
