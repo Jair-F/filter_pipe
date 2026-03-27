@@ -30,6 +30,33 @@ class Filter(PipeChunk):
         return r'^filter\(\)$'
 
 
+class ToString(Filter):
+    @staticmethod
+    def pipe_from_args(ndigits:int=1) -> str:
+        return F"str(ndigits={ndigits})"
+
+    def __init__(self, pipe_str:str = pipe_from_args()):
+        super().__init__()
+        self._init_from_pipe_str(pipe_str)
+
+    def _init_from_pipe_str(self, pipe_str:str)->None:
+        super()._init_from_pipe_str(pipe_str)
+        if pipe_str.find('ndigits') > 0:
+            self._ndigits = int(self._extract_argument_float(pipe_str, r'ndigits'))
+        else:
+            self._ndigits = 0
+
+    def regex_match_str(self) -> str:
+        return r'^str\((ndigits=\d+)?\)$'
+
+    @abc.abstractmethod
+    def calc(self, value:float) -> str:
+        self._last_calc_value = round(value, ndigits=self._ndigits)
+        if self._last_calc_value.is_integer():
+            return str(int(self._last_calc_value))
+        return str(self._last_calc_value)
+
+
 class MovingAverage(Filter):
     @staticmethod
     def pipe_from_args(n:int = 10) -> str:
@@ -174,7 +201,7 @@ class HighCut(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^hcut\(cut\=(\d*.?\d+)\)$'
+        return r'^hcut\(cut\=([+-]?\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
@@ -197,7 +224,7 @@ class LowCut(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^lcut\(cut\=(\d*.?\d+)\)$'
+        return r'^lcut\(cut\=([+-]?\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:

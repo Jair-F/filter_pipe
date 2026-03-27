@@ -8,3 +8,6 @@ if __name__ == '__main__':
 
     divider = Divide(' / 2')
     print(F"10/div: {divider.calc(10)}")
+
+    print(F"value: {str(float(round(123.123, ndigits=2)))}")
+    print(F"value: {str(123)}")

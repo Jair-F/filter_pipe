@@ -20,7 +20,7 @@ class Pipeline:
         result = value
         for pipe in self._pipeline:
             result = pipe.calc(result)
-            self._last_calc_value = result
+            self._last_calc_value = float(result)
         return result
 
     def last_calc_value_float(self)->float:

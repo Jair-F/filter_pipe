@@ -1,8 +1,39 @@
 
 import pytest
 
-from src.pipeline.filters import BandPass, HighCut, HighPass, LowCut, LowPass, MovingAverage, Notch
+from src.pipeline.filters import BandPass, HighCut, HighPass, LowCut, LowPass, MovingAverage, Notch, ToString
 
+def test_to_string_ndigits_eight():
+    pipe = ToString('str(ndigits=8)')
+
+    result = pipe.calc(123.123123123123123123)
+
+    assert result == '123.12312312'
+    assert pipe.last_calc_value_float() == 123.12312312
+
+def test_to_string_ndigits_zero():
+    pipe = ToString('str(ndigits=0)')
+
+    result = pipe.calc(123.123123123123123123)
+
+    assert result == '123'
+    assert pipe.last_calc_value_float() == 123
+
+def test_to_string_no_ndigits_parameter():
+    pipe = ToString('str()')
+
+    result = pipe.calc(123.123123123123123123)
+
+    assert result == '123'
+    assert pipe.last_calc_value_float() == 123
+
+def test_to_string_ndigits_two():
+    pipe = ToString('str(ndigits=2)')
+
+    result = pipe.calc(123.123)
+
+    assert result == '123.12'
+    assert pipe.last_calc_value_float() == 123.12
 
 def test_moving_average_filter_length():
     input_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -120,11 +151,23 @@ def test_highcut_not_cutting():
 
     assert filter.calc(value) == value
 
+def test_highcut_cutting_minus_with_comma():
+    value = 15
+    filter = HighCut('hcut(cut=-20.1)')
+
+    assert filter.calc(value) == -20.1
+
 def test_lowcut_cutting():
     value = 16
     filter = LowCut('lcut(cut=20)')
 
     assert filter.calc(value) == 20
+
+def test_lowcut_cutting_minus_with_comma():
+    value = -50.3
+    filter = LowCut('lcut(cut=-20.1234)')
+
+    assert filter.calc(value) == -20.1234
 
 def test_lowcut_not_cutting():
     value = 35
