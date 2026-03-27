@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signal & Sensor Lab Pro + Amplitude</title>
+    <title>Signal & Sensor Lab Pro + Dual Amplitude</title>
     <style>
         :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --text: #c9d1d9; --border: #30363d; --mute: #f85149; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
@@ -30,13 +30,13 @@
         #startBtn { padding: 20px 40px; background: var(--accent); color: #fff; font-size: 1.2rem; box-shadow: 0 0 20px rgba(88, 166, 255, 0.4); }
         
         input[type="range"] { flex: 1; accent-color: var(--accent); }
-        .label-sm { font-size: 0.75rem; color: #8b949e; width: 90px; }
+        .label-sm { font-size: 0.75rem; color: #8b949e; width: 100px; }
     </style>
 </head>
 <body>
 
 <div id="overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:99; display:flex; justify-content:center; align-items:center;">
-    <button id="startBtn" class="btn">START SENSOR ENGINE</button>
+    <button id="startBtn" class="btn">START SIGNAL ENGINES</button>
 </div>
 
 <div class="section">
@@ -53,6 +53,15 @@
                     <button class="spin" onclick="stepGlobal('intFreq', -10)">-</button>
                     <input type="number" id="intFreqNum" value="440">
                     <button class="spin" onclick="stepGlobal('intFreq', 10)">+</button>
+                </div>
+            </div>
+            <div class="ctrl-row">
+                <span class="label-sm">Interf. Amp</span>
+                <input type="range" id="intAmp" min="0" max="1" step="0.01" value="0.2">
+                <div class="num-input-wrap">
+                    <button class="spin" onclick="stepGlobal('intAmp', -0.05)">-</button>
+                    <input type="number" id="intAmpNum" value="0.2">
+                    <button class="spin" onclick="stepGlobal('intAmp', 0.05)">+</button>
                 </div>
             </div>
             <div class="ctrl-row">
@@ -78,7 +87,7 @@
         <div class="vis">
             <canvas id="sensorCanvas"></canvas>
             <div class="ctrl-row">
-                <span class="label-sm">Sensor Amplitude</span>
+                <span class="label-sm">Sensor Amp</span>
                 <input type="range" id="sensorAmp" min="0" max="2" step="0.05" value="0.5">
                 <div class="num-input-wrap">
                     <button class="spin" onclick="stepGlobal('sensorAmp', -0.1)">-</button>
@@ -122,9 +131,10 @@ class Notch { constructor(l,h){this.bp=new BandPass(l,h);} calc(v){return v-this
 class HighCut { constructor(c){this.c=c;} calc(v){return Math.min(this.c,v);}}
 class LowCut { constructor(c){this.c=c;} calc(v){return Math.max(this.c,v);}}
 
-let audioCtx, analyser, outGain, audioChain=[], sensorChain=[];
+let audioCtx, analyser, audioChain=[], sensorChain=[];
 let sHistRaw=new Array(200).fill(0), sHistFilt=new Array(200).fill(0);
 let isMuted = false;
+let phase = 0;
 
 function init() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -134,26 +144,31 @@ function init() {
     proc.onaudioprocess = (e) => {
         const out = e.outputBuffer.getChannelData(0);
         const aNoise = parseFloat(document.getElementById('audioNoise').value);
+        const aIntFreq = parseFloat(document.getElementById('intFreq').value);
+        const aIntAmp = parseFloat(document.getElementById('intAmp').value);
         const sNoise = parseFloat(document.getElementById('sensorNoise').value);
         const sAmp = parseFloat(document.getElementById('sensorAmp').value);
         const speed = parseInt(document.getElementById('simSpeed').value);
 
+        const phaseStep = (2 * Math.PI * aIntFreq) / audioCtx.sampleRate;
+
         for (let i = 0; i < out.length; i++) {
             // Audio Stream Logic
-            let aS = (Math.random()*2-1)*aNoise + Math.sin(i*0.1)*0.2; 
+            let interference = Math.sin(phase) * aIntAmp;
+            phase += phaseStep;
+            if (phase > 2 * Math.PI) phase -= 2 * Math.PI;
+
+            let aS = (Math.random()*2-1)*aNoise + interference; 
             for(let n of audioChain) if(n.inst) aS = n.inst.calc(aS);
             out[i] = isMuted ? 0 : aS;
 
             // Sensor Stream Logic
             if(i % (2048 / speed | 0) === 0) {
-                // Base signal (Sinusoid) + Jitter * Amplitude
                 let base = Math.sin(Date.now() / 500) * sAmp;
                 let jitter = (Math.random()*2-1) * sNoise;
                 let rawVal = base + jitter;
-                
                 let filtVal = rawVal;
                 for(let n of sensorChain) if(n.inst) filtVal = n.inst.calc(filtVal);
-                
                 sHistRaw.push(rawVal); sHistRaw.shift();
                 sHistFilt.push(filtVal); sHistFilt.shift();
             }
@@ -272,7 +287,7 @@ function loop() {
         const drawS = (data, col) => {
             sctx.beginPath(); sctx.strokeStyle=col; sctx.lineWidth=2;
             for(let i=0; i<200; i++) {
-                let y = 100 - (data[i]*40); // Scaled for higher amplitudes
+                let y = 100 - (data[i]*40);
                 if(i===0) sctx.moveTo(i*2, y); else sctx.lineTo(i*2, y);
             }
             sctx.stroke();
