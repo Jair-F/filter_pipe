@@ -3,98 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signal Lab - Full Restoration Pro</title>
+    <title>Signal Lab - Full Audio & Sensor Sync</title>
     <style>
-        :root { --bg: #0b0e14; --card: #151921; --accent: #00d4ff; --text: #e1e4e8; --border: #2d333b; --mute: #f85149; --raw: #ff3e3e; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        .section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 30px; max-width: 1200px; margin-inline: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { margin: 0 0 20px 0; color: #fff; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .grid { display: grid; grid-template-columns: 1fr 450px; gap: 30px; }
-        canvas { width: 100%; height: 150px; background: #000; border-radius: 8px; border: 1px solid #222; margin-top: 10px; }
+        :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --text: #c9d1d9; --border: #30363d; --mute: #f85149; --raw: #ff4d4d; --up: #238636; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 1150px; margin-inline: auto; }
+        h2 { margin: 0 0 15px 0; color: #fff; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: 1fr 420px; gap: 20px; }
+        canvas { width: 100%; height: 160px; background: #000; border-radius: 6px; border: 1px solid #333; }
         
-        /* TELEMETRY STYLE */
-        .telemetry-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-        .tel-row { background: #000; border: 1px solid #333; border-radius: 12px; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
-        .tel-row::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
-        .tel-raw::before { background: var(--raw); box-shadow: 0 0 15px var(--raw); }
-        .tel-filt::before { background: var(--accent); box-shadow: 0 0 15px var(--accent); }
-        .tel-label { font-size: 0.75rem; color: #666; letter-spacing: 2px; font-weight: 800; }
-        .tel-value { font-family: 'Courier New', monospace; font-size: 3.8rem; font-weight: 900; min-width: 300px; text-align: right; letter-spacing: -2px; transition: color 0.1s; }
-        .tel-raw .tel-value { color: var(--raw); }
-        .tel-filt .tel-value { color: var(--accent); }
+        /* TELEMETRY */
+        .telemetry-stack { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+        .tel-row { background: #000; border: 1px solid #333; border-radius: 6px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .tel-label { font-size: 0.7rem; color: #8b949e; letter-spacing: 1px; font-weight: bold; }
+        .tel-value { font-family: 'Courier New', monospace; font-size: 2.8rem; font-weight: 900; min-width: 220px; text-align: right; }
+        .tel-raw { color: var(--raw); border-left: 4px solid var(--raw); }
+        .tel-filt { color: var(--accent); border-left: 4px solid var(--accent); }
 
-        /* ANIMATED PIPELINE */
-        .pipeline-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
-        .node { background: #1c2128; border: 1px solid var(--border); padding: 15px; border-radius: 10px; position: relative; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
-        .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.7rem; font-weight: bold; color: #8b949e; }
+        /* PIPELINE & NODES */
+        .pipeline { display: flex; flex-direction: column; gap: 8px; max-height: 550px; overflow-y: auto; padding-right: 5px; border-left: 1px solid var(--border); padding-left: 15px; }
+        .node { background: #1c2128; border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 10px; border-radius: 6px; margin-bottom: 4px; }
+        .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.7rem; color: #8b949e; font-weight: bold; }
+        .node-actions { display: flex; gap: 4px; }
+        .action-btn { background: #30363d; color: white; border: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .btn-up { color: #3fb950; }
+        .btn-dn { color: #f85149; }
+
+        .ctrl-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 0.8rem; }
+        .num-input-wrap { display: flex; align-items: center; background: #21262d; border-radius: 4px; border: 1px solid var(--border); overflow: hidden; }
+        .num-input-wrap input { width: 60px; background: none; border: none; color: white; text-align: center; padding: 4px; font-family: monospace; font-size: 0.8rem; }
+        .spin { background: #30363d; color: white; border: none; padding: 4px 8px; cursor: pointer; font-weight: bold; }
         
-        /* CONTROLS */
-        .ctrl-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 0.8rem; }
-        .num-input-wrap { display: flex; align-items: center; background: #000; border-radius: 6px; border: 1px solid #333; overflow: hidden; }
-        .num-input-wrap input { width: 55px; background: none; border: none; color: var(--accent); text-align: center; font-family: monospace; font-weight: bold; padding: 5px; }
-        .spin { background: #222; color: #fff; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; }
-        .spin:hover { background: #333; }
-        
-        .btn-add { width: 100%; background: #238636; color: white; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-mute { background: #30363d; color: #fff; padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.7rem; }
+        .btn-add { width: 100%; background: #238636; color: white; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        .btn-mute { background: #30363d; color: #fff; padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.7rem; }
         .btn-mute.active { background: var(--mute); }
         
-        input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
-        #startBtn { padding: 30px 60px; background: var(--accent); color: #000; font-size: 1.2rem; font-weight: 900; border-radius: 12px; cursor: pointer; border: none; text-transform: uppercase; }
+        #startBtn { padding: 25px 50px; background: var(--accent); color: #fff; font-size: 1.4rem; border-radius: 50px; cursor: pointer; border: none; box-shadow: 0 0 20px rgba(88,166,255,0.4); }
+        input[type="range"] { flex: 1; accent-color: var(--accent); }
+        .label-sm { font-size: 0.7rem; color: #8b949e; width: 85px; }
+        select { background: #0d1117; color: white; border: 1px solid var(--border); border-radius: 4px; padding: 3px; font-size: 0.8rem; flex: 1; }
     </style>
 </head>
 <body>
 
-<div id="overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:99; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(15px);">
-    <button id="startBtn">INITIALIZE FULL SYSTEM RESTORE</button>
+<div id="overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:99; display:flex; justify-content:center; align-items:center;">
+    <button id="startBtn">INITIALIZE DUAL LAB SYNC</button>
 </div>
 
 <div class="section">
-    <h2>Audio Frequency Processing <button class="btn-mute" id="audioMute">MUTE ENGINE</button></h2>
+    <h2>1. AUDIO SPECTRUM LAB <button class="btn-mute" id="audioMute">MUTE SOUND</button></h2>
     <div class="grid">
         <div class="vis">
             <canvas id="audioCanvas"></canvas>
-            <div class="ctrl-row"><span>Interf. (Hz)</span><input type="range" id="intFreq" min="20" max="2000" value="440" oninput="syncGlobal('intFreq', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('intFreq', -10)">-</button><input type="number" id="intFreqNum" value="440"><button class="spin" onclick="spinGlobal('intFreq', 10)">+</button></div></div>
-            <div class="ctrl-row"><span>Int. Amp</span><input type="range" id="intAmp" min="0" max="1" step="0.01" value="0.2" oninput="syncGlobal('intAmp', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('intAmp', -0.05)">-</button><input type="number" id="intAmpNum" value="0.2"><button class="spin" onclick="spinGlobal('intAmp', 0.05)">+</button></div></div>
-            <div class="ctrl-row"><span>Audio Noise</span><input type="range" id="audioNoise" min="0" max="1" step="0.01" value="0.05" oninput="syncGlobal('audioNoise', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('audioNoise', -0.01)">-</button><input type="number" id="audioNoiseNum" value="0.05"><button class="spin" onclick="spinGlobal('audioNoise', 0.01)">+</button></div></div>
+            <div class="ctrl-row"><span class="label-sm">Interf. (Hz)</span><input type="range" id="intFreq" min="20" max="2000" value="440" oninput="syncGlobal('intFreq', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('intFreq', -10)">-</button><input type="number" id="intFreqNum" value="440" oninput="syncGlobal('intFreq', this.value)"><button class="spin" onclick="spinGlobal('intFreq', 10)">+</button></div></div>
+            <div class="ctrl-row"><span class="label-sm">Interf. Amp</span><input type="range" id="intAmp" min="0" max="1" step="0.01" value="0.2" oninput="syncGlobal('intAmp', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('intAmp', -0.05)">-</button><input type="number" id="intAmpNum" value="0.2" oninput="syncGlobal('intAmp', this.value)"><button class="spin" onclick="spinGlobal('intAmp', 0.05)">+</button></div></div>
+            <div class="ctrl-row"><span class="label-sm">Noise Floor</span><input type="range" id="audioNoise" min="0" max="1" step="0.01" value="0.05" oninput="syncGlobal('audioNoise', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('audioNoise', -0.01)">-</button><input type="number" id="audioNoiseNum" value="0.05" oninput="syncGlobal('audioNoise', this.value)"><button class="spin" onclick="spinGlobal('audioNoise', 0.01)">+</button></div></div>
         </div>
         <div class="pipeline">
-            <div id="audioNodes" class="pipeline-container"></div>
+            <div id="audioNodes"></div>
             <button class="btn-add" onclick="addNode('audio')">+ Add Audio Stage</button>
         </div>
     </div>
 </div>
 
 <div class="section">
-    <h2>Sensor Data Lab</h2>
+    <h2>2. PRECISION SENSOR LAB</h2>
     <div class="grid">
         <div class="vis">
             <div class="telemetry-stack">
-                <div class="tel-row tel-raw"><span class="tel-label">RAW INPUT</span><span class="tel-value" id="valRaw">0.0000</span></div>
-                <div class="tel-row tel-filt"><span class="tel-label">FILTERED</span><span class="tel-value" id="valFilt">0.0000</span></div>
+                <div class="tel-row tel-raw"><span class="tel-label">RAW DATA</span><span class="tel-value" id="valRaw">0.000</span></div>
+                <div class="tel-row tel-filt"><span class="tel-label">FILTERED</span><span class="tel-value" id="valFilt">0.000</span></div>
             </div>
             <canvas id="sensorCanvas"></canvas>
-            <div class="ctrl-row"><span>Sim Speed</span><input type="range" id="simSpeed" min="0.1" max="100" step="0.1" value="20" oninput="syncGlobal('simSpeed', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('simSpeed', -1)">-</button><input type="number" id="simSpeedNum" value="20"><button class="spin" onclick="spinGlobal('simSpeed', 1)">+</button></div></div>
+            <div class="ctrl-row"><span class="label-sm">Signal Amp</span><input type="range" id="sensorAmp" min="0" max="2" step="0.05" value="0.5" oninput="syncGlobal('sensorAmp', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('sensorAmp', -0.1)">-</button><input type="number" id="sensorAmpNum" value="0.5" oninput="syncGlobal('sensorAmp', this.value)"><button class="spin" onclick="spinGlobal('sensorAmp', 0.1)">+</button></div></div>
+            <div class="ctrl-row"><span class="label-sm">Jitter Level</span><input type="range" id="sensorNoise" min="0" max="1" step="0.01" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('sensorNoise', -0.05)">-</button><input type="number" id="sensorNoiseNum" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"><button class="spin" onclick="spinGlobal('sensorNoise', 0.05)">+</button></div></div>
+            <div class="ctrl-row">
+                <span class="label-sm">SIM SPEED</span>
+                <input type="range" id="simSpeed" min="0.1" max="100" step="0.1" value="20" oninput="syncGlobal('simSpeed', this.value)">
+                <div class="num-input-wrap">
+                    <button class="spin" onclick="spinGlobal('simSpeed', -0.5)">-</button>
+                    <input type="number" id="simSpeedNum" value="20" step="0.1" oninput="syncGlobal('simSpeed', this.value)">
+                    <button class="spin" onclick="spinGlobal('simSpeed', 0.5)">+</button>
+                </div>
+            </div>
         </div>
         <div class="pipeline">
-            <div id="sensorNodes" class="pipeline-container"></div>
+            <div id="sensorNodes"></div>
             <button class="btn-add" onclick="addNode('sensor')">+ Add Sensor Stage</button>
         </div>
     </div>
 </div>
 
 <script>
-/* Filter Classes */
 class LowPass { constructor(a=0.1){this.a=a;this.l=0;} calc(v){this.l=(1-this.a)*this.l+this.a*v; return this.l;}}
 class HighPass { constructor(a=0.1){this.lp=new LowPass(a);} calc(v){return v-this.lp.calc(v);}}
 class MovingAverage { constructor(n=10){this.n=Math.max(1,Math.round(n));this.b=[];} calc(v){this.b.push(v);if(this.b.length>this.n)this.b.shift();return this.b.reduce((a,b)=>a+b,0)/this.b.length;}}
-class BandPass { constructor(l,h){this.lp=new LowPass(l);this.hp=new HighPass(h);} calc(v){return this.hp.calc(this.lp.calc(v));}}
-class Notch { constructor(l,h){this.bp=new BandPass(l,h);} calc(v){return v-this.bp.calc(v);}}
 class HighCut { constructor(c){this.c=c;} calc(v){return Math.min(this.c,v);}}
-class LowCut { constructor(c){this.c=c;} calc(v){return Math.max(this.c,v);}}
 
-let audioCtx, analyser, audioChain=[], sensorChain=[], sHistRaw=new Array(200).fill(0), sHistFilt=new Array(200).fill(0);
-let lastRaw=0, lastFilt=0, updateDisplayFlag=false, isMuted=false, phase=0;
+let audioCtx, analyser, audioChain=[], sensorChain=[], sHistRaw=new Array(200).fill(0), sHistFilt=new Array(200).fill(0), isMuted=false, phase=0;
+let lastRaw=0, lastFilt=0, updateDisplayFlag=false;
 
 function init() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -106,6 +113,8 @@ function init() {
         const aFreq = parseFloat(document.getElementById('intFreq').value);
         const aAmp = parseFloat(document.getElementById('intAmp').value);
         const aNoise = parseFloat(document.getElementById('audioNoise').value);
+        const sAmp = parseFloat(document.getElementById('sensorAmp').value);
+        const sNoise = parseFloat(document.getElementById('sensorNoise').value);
         const speed = Math.max(0.1, parseFloat(document.getElementById('simSpeed').value));
         const phaseStep = (2 * Math.PI * aFreq) / audioCtx.sampleRate;
 
@@ -116,7 +125,7 @@ function init() {
             out[i] = isMuted ? 0 : aS;
 
             if(i % (Math.floor(2048 / (speed * 0.5)) || 1) === 0) {
-                lastRaw = (Math.sin(Date.now()/500)*0.5) + (Math.random()*0.4 - 0.2);
+                lastRaw = Math.sin(Date.now()/500)*sAmp + (Math.random()*2-1)*sNoise;
                 lastFilt = lastRaw;
                 sensorChain.forEach(n => { if(n.inst) lastFilt = n.inst.calc(lastFilt); });
                 sHistRaw.push(lastRaw); sHistRaw.shift();
@@ -135,38 +144,23 @@ function syncGlobal(id, val) {
 }
 
 function spinGlobal(id, delta) {
-    const el = document.getElementById(id);
-    const newVal = Math.max(parseFloat(el.min), parseFloat(el.value) + delta);
-    syncGlobal(id, newVal.toFixed(1));
+    const num = document.getElementById(id + 'Num');
+    const newVal = Math.max(id==='simSpeed'?0.1:0, parseFloat(num.value) + delta);
+    syncGlobal(id, parseFloat(newVal.toFixed(2)));
 }
 
 function moveNode(target, id, dir) {
     const chain = target === 'audio' ? audioChain : sensorChain;
     const idx = chain.findIndex(n => n.id === id);
-    const newIdx = idx + dir;
-    if (newIdx < 0 || newIdx >= chain.length) return;
-    
-    [chain[idx], chain[newIdx]] = [chain[newIdx], chain[idx]];
-    
-    const parent = document.getElementById(target + 'Nodes');
-    const nodes = Array.from(parent.children);
-    const movingNode = nodes[idx];
-    const targetNode = nodes[newIdx];
-    const moveDist = targetNode.offsetHeight + 10;
-    
-    movingNode.style.transform = `translateY(${dir * moveDist}px)`;
-    targetNode.style.transform = `translateY(${-dir * moveDist}px)`;
-
-    setTimeout(() => {
-        movingNode.style.transform = '';
-        targetNode.style.transform = '';
-        renderPipeline(target);
-    }, 250);
+    if (dir === -1 && idx > 0) [chain[idx], chain[idx-1]] = [chain[idx-1], chain[idx]];
+    else if (dir === 1 && idx < chain.length - 1) [chain[idx], chain[idx+1]] = [chain[idx+1], chain[idx]];
+    renderPipeline(target);
 }
 
 function addNode(target) {
     const chain = target === 'audio' ? audioChain : sensorChain;
-    chain.push({ id: Date.now(), type: 'lpass', p: [0.1, 0.5], inst: new LowPass(0.1) });
+    const id = Date.now();
+    chain.push({ id, type: 'lpass', p: [0.1], inst: new LowPass(0.1) });
     renderPipeline(target);
 }
 
@@ -176,21 +170,16 @@ function removeNode(target, id) {
     renderPipeline(target);
 }
 
-function updateNode(target, id, type, val, pIdx=0) {
+function updateNode(target, id, type, val) {
     const chain = target === 'audio' ? audioChain : sensorChain;
     const node = chain.find(n => n.id === id);
     if(type) node.type = type;
-    if(val !== undefined) node.p[pIdx] = parseFloat(val);
+    if(val !== undefined) node.p[0] = parseFloat(val);
     
-    const p = node.p;
-    if(node.type==='lpass') node.inst = new LowPass(p[0]);
-    if(node.type==='hpass') node.inst = new HighPass(p[0]);
-    if(node.type==='mavg')  node.inst = new MovingAverage(p[0]*100);
-    if(node.type==='bpass') node.inst = new BandPass(p[0], p[1]);
-    if(node.type==='notch') node.inst = new Notch(p[0], p[1]);
-    if(node.type==='hcut')  node.inst = new HighCut(p[0]);
-    if(node.type==='lcut')  node.inst = new LowCut(p[0]);
-    
+    if(node.type === 'lpass') node.inst = new LowPass(node.p[0]);
+    if(node.type === 'hpass') node.inst = new HighPass(node.p[0]);
+    if(node.type === 'mavg')  node.inst = new MovingAverage(node.p[0]*100);
+    if(node.type === 'hcut')  node.inst = new HighCut(node.p[0]);
     renderPipeline(target);
 }
 
@@ -201,34 +190,24 @@ function renderPipeline(target) {
     chain.forEach((node, idx) => {
         const div = document.createElement('div');
         div.className = 'node';
-        const isDual = ['bpass', 'notch'].includes(node.type);
         div.innerHTML = `
             <div class="node-header">
-                <span>STAGE ${idx+1}: ${node.type.toUpperCase()}</span>
-                <div style="display:flex; gap:5px">
-                    <button class="action-btn" onclick="moveNode('${target}', ${node.id}, -1)" style="cursor:pointer">↑</button>
-                    <button class="action-btn" onclick="moveNode('${target}', ${node.id}, 1)" style="cursor:pointer">↓</button>
-                    <button class="action-btn" onclick="removeNode('${target}', ${node.id})" style="color:var(--mute); cursor:pointer">✕</button>
+                <span>STEP ${idx+1}: ${node.type.toUpperCase()}</span>
+                <div class="node-actions">
+                    <button class="action-btn btn-up" onclick="moveNode('${target}', ${node.id}, -1)">↑</button>
+                    <button class="action-btn btn-dn" onclick="moveNode('${target}', ${node.id}, 1)">↓</button>
+                    <button class="action-btn" onclick="removeNode('${target}', ${node.id})">✕</button>
                 </div>
             </div>
-            <div style="display:flex; flex-direction:column; gap:8px">
-                <select style="background:#000; color:#fff; border:1px solid #444; padding:5px; border-radius:4px" onchange="updateNode('${target}', ${node.id}, this.value)">
+            <div class="ctrl-row">
+                <select onchange="updateNode('${target}', ${node.id}, this.value)">
                     <option value="lpass" ${node.type==='lpass'?'selected':''}>Low Pass</option>
                     <option value="hpass" ${node.type==='hpass'?'selected':''}>High Pass</option>
-                    <option value="mavg" ${node.type==='mavg'?'selected':''}>Moving Average</option>
-                    <option value="bpass" ${node.type==='bpass'?'selected':''}>Band Pass</option>
-                    <option value="notch" ${node.type==='notch'?'selected':''}>Notch Filter</option>
+                    <option value="mavg" ${node.type==='mavg'?'selected':''}>Moving Avg</option>
                     <option value="hcut" ${node.type==='hcut'?'selected':''}>High Cut</option>
-                    <option value="lcut" ${node.type==='lcut'?'selected':''}>Low Cut</option>
                 </select>
-                <div class="ctrl-row">
-                    <input type="range" min="0" max="1" step="0.01" value="${node.p[0]}" oninput="updateNode('${target}', ${node.id}, null, this.value, 0)">
-                    <span style="font-family:monospace; font-size:0.7rem; width:30px">${node.p[0]}</span>
-                </div>
-                ${isDual ? `<div class="ctrl-row">
-                    <input type="range" min="0" max="1" step="0.01" value="${node.p[1]}" oninput="updateNode('${target}', ${node.id}, null, this.value, 1)">
-                    <span style="font-family:monospace; font-size:0.7rem; width:30px">${node.p[1]}</span>
-                </div>` : ''}
+                <input type="range" min="0" max="1" step="0.01" value="${node.p[0]}" oninput="updateNode('${target}', ${node.id}, null, this.value)">
+                <span style="font-family:monospace; font-size:0.7rem; width:30px">${node.p[0]}</span>
             </div>
         `;
         cont.appendChild(div);
@@ -237,37 +216,39 @@ function renderPipeline(target) {
 
 document.getElementById('audioMute').onclick = function() { 
     isMuted = !isMuted; this.classList.toggle('active');
-    this.innerText = isMuted ? "UNMUTE ENGINE" : "MUTE ENGINE";
+    this.innerText = isMuted ? "UNMUTE SOUND" : "MUTE SOUND";
 };
 document.getElementById('startBtn').onclick = () => { init(); document.getElementById('overlay').remove(); };
 
 function loop() {
-    const sctx = document.getElementById('sensorCanvas').getContext('2d');
     const actx = document.getElementById('audioCanvas').getContext('2d');
+    const sctx = document.getElementById('sensorCanvas').getContext('2d');
     const fData = new Uint8Array(analyser.frequencyBinCount);
+    
     const render = () => {
         requestAnimationFrame(render);
         if(updateDisplayFlag) {
-            document.getElementById('valRaw').innerText = (lastRaw >= 0 ? "+" : "") + lastRaw.toFixed(4);
-            document.getElementById('valFilt').innerText = (lastFilt >= 0 ? "+" : "") + lastFilt.toFixed(4);
+            document.getElementById('valRaw').innerText = (lastRaw >= 0 ? " " : "") + lastRaw.toFixed(3);
+            document.getElementById('valFilt').innerText = (lastFilt >= 0 ? " " : "") + lastFilt.toFixed(3);
             updateDisplayFlag = false; 
         }
         analyser.getByteFrequencyData(fData);
         actx.fillStyle='#000'; actx.fillRect(0,0,400,200);
         for(let i=0; i<fData.length; i++) {
+            let h = (fData[i]/255)*160;
             actx.fillStyle = `hsl(${200+(fData[i]/2)}, 100%, 50%)`;
-            actx.fillRect(i*2, 150-(fData[i]/255)*150, 2, (fData[i]/255)*150);
+            actx.fillRect(i*2, 160-h, 2, h);
         }
         sctx.fillStyle='#000'; sctx.fillRect(0,0,400,200);
         const drawS = (data, col) => {
             sctx.beginPath(); sctx.strokeStyle=col; sctx.lineWidth=2;
             for(let i=0; i<200; i++) {
-                let y = 75 - (data[i]*75);
-                if(i===0) sctx.moveTo(i*5, y); else sctx.lineTo(i*5, y);
+                let y = 80 - (data[i]*40);
+                if(i===0) sctx.moveTo(i*2, y); else sctx.lineTo(i*2, y);
             }
             sctx.stroke();
         };
-        drawS(sHistRaw, '#ff3e3e'); drawS(sHistFilt, '#00d4ff');
+        drawS(sHistRaw, '#ff4d4d'); drawS(sHistFilt, '#58a6ff');
     };
     render();
 }
