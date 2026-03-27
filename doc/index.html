@@ -3,70 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Signal Filter Simulator</title>
+    <title>Advanced Signal Filter Lab</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: #ddd; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { background: #2a2a2a; padding: 20px; border-radius: 12px; width: 90%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        canvas { width: 100%; height: 200px; background: #000; border-radius: 8px; margin-bottom: 20px; }
-        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        .control-group { background: #333; padding: 10px; border-radius: 6px; display: flex; flex-direction: column; }
-        label { font-size: 0.8rem; color: #03dac6; margin-bottom: 5px; font-weight: bold; }
-        select, input { background: #444; color: white; border: 1px solid #555; padding: 8px; border-radius: 4px; }
-        button { grid-column: 1 / -1; padding: 15px; background: #bb86fc; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .val { font-family: monospace; color: #aaa; float: right; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f12; color: #ececec; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: #1c1c21; padding: 25px; border-radius: 16px; width: 95%; max-width: 900px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 1px solid #333; }
+        canvas { width: 100%; height: 250px; background: #050505; border-radius: 8px; margin-bottom: 25px; border: 1px solid #444; }
+        
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .control-group { background: #25252b; padding: 15px; border-radius: 10px; border-left: 4px solid #bb86fc; }
+        
+        label { font-size: 0.85rem; color: #03dac6; font-weight: 600; display: block; margin-bottom: 10px; }
+        .input-row { display: flex; align-items: center; gap: 10px; }
+        
+        input[type="range"] { flex-grow: 1; accent-color: #bb86fc; cursor: pointer; }
+        input[type="number"] { width: 80px; background: #121212; color: #fff; border: 1px solid #444; padding: 5px; border-radius: 4px; text-align: center; }
+        select { width: 100%; background: #121212; color: white; border: 1px solid #444; padding: 10px; border-radius: 6px; margin-top: 5px; }
+        
+        button { grid-column: 1 / -1; padding: 18px; background: #bb86fc; color: #000; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
+        button:hover { background: #9965f4; transform: translateY(-2px); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Signal Filter Simulation (Custom Logic)</h2>
+    <h2 style="margin-top:0; color: #bb86fc;">Advanced Signal Filter Lab</h2>
     <canvas id="visualizer"></canvas>
     
-    <div class="controls">
-        <button id="startBtn">START AUDIO ENGINE</button>
+    <button id="startBtn">INITIALIZE AUDIO ENGINE</button>
 
+    <div class="controls">
         <div class="control-group">
-            <label>Filter Implementation</label>
+            <label>1. FILTER TYPE</label>
             <select id="filterSelect">
-                <option value="none">None (Raw Noise)</option>
-                <option value="mavg">Moving Average (n)</option>
-                <option value="lpass">Low Pass (alpha)</option>
-                <option value="hpass">High Pass (alpha)</option>
-                <option value="bpass">Band Pass (low/high alpha)</option>
-                <option value="notch">Notch (low/high alpha)</option>
+                <option value="none">Raw Signal (Bypass)</option>
+                <option value="mavg">Moving Average (N samples)</option>
+                <option value="lpass">Low Pass (Alpha)</option>
+                <option value="hpass">High Pass (Alpha)</option>
+                <option value="bpass">Band Pass (Dual Alpha)</option>
+                <option value="notch">Notch (Dual Alpha)</option>
             </select>
         </div>
 
         <div class="control-group">
-            <label>Primary Alpha / N <span id="alpha1Val" class="val">0.1</span></label>
-            <input type="range" id="param1" min="0.001" max="1" step="0.001" value="0.1">
+            <label id="label1">Alpha / N Window</label>
+            <div class="input-row">
+                <input type="range" id="range1" min="0.0001" max="1" step="0.0001" value="0.1">
+                <input type="number" id="num1" min="0.0001" max="1" step="0.0001" value="0.1">
+            </div>
         </div>
 
-        <div class="control-group" id="secondaryControl" style="display:none;">
-            <label>Secondary Alpha <span id="alpha2Val" class="val">0.5</span></label>
-            <input type="range" id="param2" min="0.001" max="1" step="0.001" value="0.5">
+        <div class="control-group hidden" id="group2">
+            <label id="label2">Secondary Alpha (High)</label>
+            <div class="input-row">
+                <input type="range" id="range2" min="0.0001" max="1" step="0.0001" value="0.5">
+                <input type="number" id="num2" min="0.0001" max="1" step="0.0001" value="0.5">
+            </div>
         </div>
 
         <div class="control-group">
-            <label>Interference Freq <span id="intVal" class="val">440</span> Hz</label>
-            <input type="range" id="intFreq" min="20" max="2000" value="440">
+            <label>2. INTERFERENCE FREQUENCY (Hz)</label>
+            <div class="input-row">
+                <input type="range" id="intRange" min="0" max="15000" step="1" value="440">
+                <input type="number" id="intNum" min="0" max="15000" value="440">
+            </div>
         </div>
         
         <div class="control-group">
-            <label>Noise Level</label>
-            <input type="range" id="noiseLevel" min="0" max="0.5" step="0.01" value="0.1">
+            <label>3. RANDOM NOISE AMPLITUDE</label>
+            <div class="input-row">
+                <input type="range" id="noiseRange" min="0" max="1" step="0.01" value="0.1">
+                <input type="number" id="noiseNum" min="0" max="1" step="0.01" value="0.1">
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-/** * PORTED PYTHON LOGIC 
+/** * PORTED LOGIC
  */
 class LowPass {
-    constructor(alpha = 0.1) {
-        this.alpha = alpha;
-        this.lastValue = 0;
-    }
+    constructor(alpha = 0.1) { this.alpha = alpha; this.lastValue = 0; }
     calc(value) {
         let result = (1 - this.alpha) * this.lastValue + this.alpha * value;
         this.lastValue = result;
@@ -75,25 +92,16 @@ class LowPass {
 }
 
 class HighPass {
-    constructor(alpha = 0.1) {
-        this.lpf = new LowPass(alpha);
-    }
-    calc(value) {
-        let lpfVal = this.lpf.calc(value);
-        return value - lpfVal;
-    }
+    constructor(alpha = 0.1) { this.lpf = new LowPass(alpha); }
+    calc(value) { return value - this.lpf.calc(value); }
 }
 
 class MovingAverage {
-    constructor(n = 10) {
-        this.n = Math.round(n);
-        this.buffer = [];
-    }
+    constructor(n = 10) { this.n = Math.max(1, Math.round(n)); this.buffer = []; }
     calc(value) {
         this.buffer.push(value);
         if (this.buffer.length > this.n) this.buffer.shift();
-        let sum = this.buffer.reduce((a, b) => a + b, 0);
-        return sum / this.buffer.length;
+        return this.buffer.reduce((a, b) => a + b, 0) / this.buffer.length;
     }
 }
 
@@ -102,146 +110,135 @@ class BandPass {
         this.lpf = new LowPass(lowAlpha);
         this.hpf = new HighPass(highAlpha);
     }
-    calc(value) {
-        let val = this.lpf.calc(value);
-        return this.hpf.calc(val);
-    }
+    calc(value) { return this.hpf.calc(this.lpf.calc(value)); }
 }
 
 class Notch {
-    constructor(lowAlpha, highAlpha) {
-        this.bpf = new BandPass(lowAlpha, highAlpha);
-    }
-    calc(value) {
-        return value - this.bpf.calc(value);
-    }
+    constructor(lowAlpha, highAlpha) { this.bpf = new BandPass(lowAlpha, highAlpha); }
+    calc(value) { return value - this.bpf.calc(value); }
 }
 
-// Global state for the audio thread
-let currentFilter = null;
-let audioCtx, analyser, scriptNode, osc, noiseGain;
+// Audio Engine State
+let audioCtx, analyser, osc, noiseGain, currentFilter = null;
 
-function setupAudio() {
+function initAudio() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Noise Generation
     const bufferSize = 4096;
-    const noiseNode = audioCtx.createScriptProcessor(bufferSize, 1, 1);
+    const processor = audioCtx.createScriptProcessor(bufferSize, 1, 1);
     
-    // Interference (Sine Wave)
     osc = audioCtx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
     const oscGain = audioCtx.createGain();
-    oscGain.gain.value = 0.1;
+    oscGain.gain.value = 0.15;
     
     noiseGain = audioCtx.createGain();
     noiseGain.gain.value = 0.1;
 
     analyser = audioCtx.createAnalyser();
-    
-    // The Processor: This is where we apply your Python logic
-    noiseNode.onaudioprocess = function(e) {
+    analyser.fftSize = 2048;
+
+    processor.onaudioprocess = function(e) {
         let input = e.inputBuffer.getChannelData(0);
         let output = e.outputBuffer.getChannelData(0);
-        
         for (let i = 0; i < input.length; i++) {
-            // Add Random Noise
             let rawSample = (Math.random() * 2 - 1) * noiseGain.gain.value + input[i];
-            
-            // Apply Logic
-            if (currentFilter) {
-                output[i] = currentFilter.calc(rawSample);
-            } else {
-                output[i] = rawSample;
-            }
+            output[i] = currentFilter ? currentFilter.calc(rawSample) : rawSample;
         }
     };
 
     osc.connect(oscGain);
-    oscGain.connect(noiseNode);
-    noiseNode.connect(analyser);
+    oscGain.connect(processor);
+    processor.connect(analyser);
     analyser.connect(audioCtx.destination);
     
     osc.start();
-    draw();
+    animate();
 }
 
-// UI Handling
-const filterSelect = document.getElementById('filterSelect');
-const param1 = document.getElementById('param1');
-const param2 = document.getElementById('param2');
-const secControl = document.getElementById('secondaryControl');
+// UI Linking Logic
+const sync = (el1, el2, callback) => {
+    const update = (e) => {
+        el2.value = e.target.value;
+        callback(parseFloat(e.target.value));
+    };
+    el1.oninput = update;
+    el2.oninput = (e) => {
+        el1.value = e.target.value;
+        callback(parseFloat(e.target.value));
+    };
+};
 
-function updateFilter() {
-    const type = filterSelect.value;
-    const p1 = parseFloat(param1.value);
-    const p2 = parseFloat(param2.value);
+function refreshFilter() {
+    const type = document.getElementById('filterSelect').value;
+    const v1 = parseFloat(document.getElementById('num1').value);
+    const v2 = parseFloat(document.getElementById('num2').value);
+    const g2 = document.getElementById('group2');
+    const l1 = document.getElementById('label1');
     
-    document.getElementById('alpha1Val').textContent = p1;
-    document.getElementById('alpha2Val').textContent = p2;
+    // UI Logic per type
+    g2.classList.add('hidden');
+    const r1 = document.getElementById('range1');
+    const n1 = document.getElementById('num1');
 
     if (type === 'mavg') {
-        currentFilter = new MovingAverage(p1 * 100); // Scale 0-1 to 0-100 samples
-        document.getElementById('alpha1Val').textContent = Math.round(p1 * 100);
-        secControl.style.display = 'none';
+        l1.innerText = "WINDOW SIZE (N Samples)";
+        r1.min = 1; r1.max = 1000; r1.step = 1;
+        n1.min = 1; n1.max = 1000; n1.step = 1;
+        currentFilter = new MovingAverage(v1);
     } else if (type === 'lpass') {
-        currentFilter = new LowPass(p1);
-        secControl.style.display = 'none';
+        l1.innerText = "ALPHA (Smoothing)";
+        r1.min = 0.0001; r1.max = 1; r1.step = 0.0001;
+        currentFilter = new LowPass(v1);
     } else if (type === 'hpass') {
-        currentFilter = new HighPass(p1);
-        secControl.style.display = 'none';
-    } else if (type === 'bpass') {
-        currentFilter = new BandPass(p1, p2);
-        secControl.style.display = 'block';
-    } else if (type === 'notch') {
-        currentFilter = new Notch(p1, p2);
-        secControl.style.display = 'block';
+        l1.innerText = "ALPHA (Smoothing)";
+        r1.min = 0.0001; r1.max = 1; r1.step = 0.0001;
+        currentFilter = new HighPass(v1);
+    } else if (type === 'bpass' || type === 'notch') {
+        l1.innerText = "LOW ALPHA";
+        g2.classList.remove('hidden');
+        r1.min = 0.0001; r1.max = 1; r1.step = 0.0001;
+        if(type === 'bpass') currentFilter = new BandPass(v1, v2);
+        else currentFilter = new Notch(v1, v2);
     } else {
         currentFilter = null;
-        secControl.style.display = 'none';
     }
 }
 
-filterSelect.onchange = updateFilter;
-param1.oninput = updateFilter;
-param2.oninput = updateFilter;
-document.getElementById('intFreq').oninput = (e) => {
-    if(osc) osc.frequency.value = e.target.value;
-    document.getElementById('intVal').textContent = e.target.value;
-};
-document.getElementById('noiseLevel').oninput = (e) => {
-    if(noiseGain) noiseGain.gain.value = e.target.value;
-};
+// Set up Syncing
+sync(document.getElementById('range1'), document.getElementById('num1'), refreshFilter);
+sync(document.getElementById('range2'), document.getElementById('num2'), refreshFilter);
+sync(document.getElementById('intRange'), document.getElementById('intNum'), (v) => { if(osc) osc.frequency.value = v; });
+sync(document.getElementById('noiseRange'), document.getElementById('noiseNum'), (v) => { if(noiseGain) noiseGain.gain.value = v; });
+
+document.getElementById('filterSelect').onchange = refreshFilter;
 
 document.getElementById('startBtn').onclick = function() {
-    if (!audioCtx) setupAudio();
+    if (!audioCtx) initAudio();
     audioCtx.resume();
-    this.style.display = 'none';
+    this.classList.add('hidden');
+    refreshFilter();
 };
 
-function draw() {
+function animate() {
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    function render() {
-        requestAnimationFrame(render);
-        analyser.getByteFrequencyData(dataArray);
-        ctx.fillStyle = '#000';
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    
+    function draw() {
+        requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(data);
+        ctx.fillStyle = '#050505';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        let barWidth = (canvas.width / bufferLength) * 2.5;
+        const barWidth = (canvas.width / data.length) * 2.5;
         let x = 0;
-        for (let i = 0; i < bufferLength; i++) {
-            let barHeight = dataArray[i];
-            ctx.fillStyle = `hsl(${280 - barHeight}, 100%, 50%)`;
-            ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+        for (let i = 0; i < data.length; i++) {
+            let h = data[i] / 255 * canvas.height;
+            ctx.fillStyle = `hsl(${220 + (data[i]/2)}, 80%, 60%)`;
+            ctx.fillRect(x, canvas.height - h, barWidth, h);
             x += barWidth + 1;
         }
     }
-    render();
+    draw();
 }
 </script>
 </body>
