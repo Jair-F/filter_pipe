@@ -3,16 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signal & Sensor Lab - Telemetry Edition</title>
+    <title>Signal & Sensor Lab - Pro Telemetry</title>
     <style>
         :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --text: #c9d1d9; --border: #30363d; --mute: #f85149; --raw: #ff4d4d; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 1100px; margin-inline: auto; }
-        h2 { margin: 0 0 15px 0; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+        h2 { margin: 0 0 15px 0; color: #fff; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; letter-spacing: 1px; }
         .grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
         canvas { width: 100%; height: 200px; background: #000; border-radius: 6px; border: 1px solid #333; }
-        .pipeline { display: flex; flex-direction: column; gap: 10px; max-height: 550px; overflow-y: auto; padding-right: 5px; }
-        .node { background: #0d1117; border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 10px; border-radius: 6px; margin-bottom: 5px; }
+        
+        /* BIG TELEMETRY STYLING */
+        .telemetry-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .tel-box { background: #000; border: 2px solid #333; border-radius: 8px; padding: 15px; text-align: center; position: relative; overflow: hidden; }
+        .tel-label { font-size: 0.7rem; color: #8b949e; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; display: block; }
+        .tel-value { font-family: 'Courier New', monospace; font-size: 2.8rem; font-weight: 900; line-height: 1; display: block; }
+        .tel-raw { color: var(--raw); text-shadow: 0 0 15px rgba(248, 81, 73, 0.4); border-color: rgba(248, 81, 73, 0.2); }
+        .tel-filt { color: var(--accent); text-shadow: 0 0 15px rgba(88, 166, 255, 0.4); border-color: rgba(88, 166, 255, 0.2); }
+
+        .pipeline { display: flex; flex-direction: column; gap: 10px; max-height: 580px; overflow-y: auto; padding-right: 5px; }
+        .node { background: #0d1117; border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 10px; border-radius: 6px; }
         .node-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; font-size: 0.8rem; }
         .ctrl-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.85rem; }
         .num-input-wrap { display: flex; align-items: center; background: #21262d; border-radius: 4px; border: 1px solid var(--border); overflow: hidden; }
@@ -21,27 +30,21 @@
         .spin:hover { background: #484f58; }
         .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-add { width: 100%; background: #238636; color: white; margin-top: 10px; }
-        .btn-mute { background: #30363d; color: #fff; }
+        .btn-mute { background: #30363d; color: #fff; font-size: 0.7rem; }
         .btn-mute.active { background: var(--mute); }
-        #startBtn { padding: 20px 40px; background: var(--accent); color: #fff; font-size: 1.2rem; }
+        #startBtn { padding: 25px 50px; background: var(--accent); color: #fff; font-size: 1.4rem; border-radius: 50px; cursor: pointer; }
         input[type="range"] { flex: 1; accent-color: var(--accent); }
         .label-sm { font-size: 0.75rem; color: #8b949e; width: 100px; }
-        
-        /* Telemetry Styling */
-        .telemetry-bar { display: flex; gap: 20px; margin-bottom: 10px; font-family: 'Courier New', monospace; font-weight: bold; }
-        .tel-item { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; font-size: 0.9rem; display: flex; justify-content: space-between; }
-        .tel-raw { color: var(--raw); background: rgba(248, 81, 73, 0.05); }
-        .tel-filt { color: var(--accent); background: rgba(88, 166, 255, 0.05); }
     </style>
 </head>
 <body>
 
 <div id="overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:99; display:flex; justify-content:center; align-items:center;">
-    <button id="startBtn" class="btn">START SIGNAL ENGINES</button>
+    <button id="startBtn" class="btn">INITIALIZE SIGNAL PROCESSING</button>
 </div>
 
 <div class="section">
-    <h2>1. Audio Lab <button class="btn btn-mute" id="audioMute">MUTE AUDIO</button></h2>
+    <h2>AUDIO FREQUENCY LAB <button class="btn btn-mute" id="audioMute">MUTE OUTPUT</button></h2>
     <div class="grid">
         <div class="vis">
             <canvas id="audioCanvas"></canvas>
@@ -49,24 +52,31 @@
             <div class="ctrl-row"><span class="label-sm">Interf. Amp</span><input type="range" id="intAmp" min="0" max="1" step="0.01" value="0.2" oninput="syncGlobal('intAmp', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('intAmp', -0.05)">-</button><input type="number" id="intAmpNum" value="0.2" oninput="syncGlobal('intAmp', this.value)"><button class="spin" onclick="spinGlobal('intAmp', 0.05)">+</button></div></div>
             <div class="ctrl-row"><span class="label-sm">White Noise</span><input type="range" id="audioNoise" min="0" max="1" step="0.01" value="0.1" oninput="syncGlobal('audioNoise', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('audioNoise', -0.01)">-</button><input type="number" id="audioNoiseNum" value="0.1" oninput="syncGlobal('audioNoise', this.value)"><button class="spin" onclick="spinGlobal('audioNoise', 0.01)">+</button></div></div>
         </div>
-        <div class="pipeline"><div id="audioNodes"></div><button class="btn btn-add" onclick="addNode('audio')">+ Add Filter</button></div>
+        <div class="pipeline"><div id="audioNodes"></div><button class="btn btn-add" onclick="addNode('audio')">+ Add Audio Filter</button></div>
     </div>
 </div>
 
 <div class="section">
-    <h2>2. Sensor Lab</h2>
+    <h2>LOW-FREQUENCY SENSOR LAB</h2>
     <div class="grid">
         <div class="vis">
-            <div class="telemetry-bar">
-                <div class="tel-item tel-raw">RAW: <span id="valRaw">0.000</span></div>
-                <div class="tel-item tel-filt">FILTERED: <span id="valFilt">0.000</span></div>
+            <div class="telemetry-container">
+                <div class="tel-box tel-raw">
+                    <span class="tel-label">Raw Signal</span>
+                    <span class="tel-value" id="valRaw">0.000</span>
+                </div>
+                <div class="tel-box tel-filt">
+                    <span class="tel-label">Filtered</span>
+                    <span class="tel-value" id="valFilt">0.000</span>
+                </div>
             </div>
+            
             <canvas id="sensorCanvas"></canvas>
             <div class="ctrl-row"><span class="label-sm">Sensor Amp</span><input type="range" id="sensorAmp" min="0" max="2" step="0.05" value="0.5" oninput="syncGlobal('sensorAmp', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('sensorAmp', -0.1)">-</button><input type="number" id="sensorAmpNum" value="0.5" oninput="syncGlobal('sensorAmp', this.value)"><button class="spin" onclick="spinGlobal('sensorAmp', 0.1)">+</button></div></div>
-            <div class="ctrl-row"><span class="label-sm">Jitter</span><input type="range" id="sensorNoise" min="0" max="1" step="0.01" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('sensorNoise', -0.05)">-</button><input type="number" id="sensorNoiseNum" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"><button class="spin" onclick="spinGlobal('sensorNoise', 0.05)">+</button></div></div>
+            <div class="ctrl-row"><span class="label-sm">Jitter (Noise)</span><input type="range" id="sensorNoise" min="0" max="1" step="0.01" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('sensorNoise', -0.05)">-</button><input type="number" id="sensorNoiseNum" value="0.3" oninput="syncGlobal('sensorNoise', this.value)"><button class="spin" onclick="spinGlobal('sensorNoise', 0.05)">+</button></div></div>
             <div class="ctrl-row"><span class="label-sm">Sim Speed</span><input type="range" id="simSpeed" min="1" max="100" value="20" oninput="syncGlobal('simSpeed', this.value)"><div class="num-input-wrap"><button class="spin" onclick="spinGlobal('simSpeed', -1)">-</button><input type="number" id="simSpeedNum" value="20" oninput="syncGlobal('simSpeed', this.value)"><button class="spin" onclick="spinGlobal('simSpeed', 1)">+</button></div></div>
         </div>
-        <div class="pipeline"><div id="sensorNodes"></div><button class="btn btn-add" onclick="addNode('sensor')">+ Add Filter</button></div>
+        <div class="pipeline"><div id="sensorNodes"></div><button class="btn btn-add" onclick="addNode('sensor')">+ Add Sensor Filter</button></div>
     </div>
 </div>
 
@@ -152,7 +162,7 @@ function addNode(target) {
     const id = Date.now();
     const div = document.createElement('div');
     div.className = 'node'; div.id = `node-${id}`;
-    div.innerHTML = `<div class="node-header"><span>${target.toUpperCase()}</span>
+    div.innerHTML = `<div class="node-header"><span>${target.toUpperCase()} STAGE</span>
         <select onchange="updateNodeType('${target}', ${id}, this.value)">
             <option value="lpass">Low Pass</option><option value="hpass">High Pass</option>
             <option value="mavg">Moving Avg</option><option value="bpass">Band Pass</option>
@@ -195,7 +205,7 @@ function removeNode(t, id) {
 
 document.getElementById('audioMute').onclick = function() { 
     isMuted = !isMuted; this.classList.toggle('active');
-    this.innerText = isMuted ? "UNMUTE" : "MUTE AUDIO";
+    this.innerText = isMuted ? "UNMUTE OUTPUT" : "MUTE OUTPUT";
 };
 document.getElementById('startBtn').onclick = () => { init(); document.getElementById('overlay').remove(); };
 
@@ -206,7 +216,7 @@ function loop() {
     const render = () => {
         requestAnimationFrame(render);
         
-        // Update Telemetry Text
+        // Update Dashboard
         document.getElementById('valRaw').innerText = lastRaw.toFixed(3);
         document.getElementById('valFilt').innerText = lastFilt.toFixed(3);
 
