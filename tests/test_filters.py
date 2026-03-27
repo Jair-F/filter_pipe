@@ -24,7 +24,7 @@ def test_moving_average_filter():
 
 def test_lowpass():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = LowPass(alpha=0.05)
+    filter = LowPass('lpass(alpha=0.05)')
 
     for value in input_values:
         filter.calc(value)
@@ -33,7 +33,7 @@ def test_lowpass():
 
 def test_lowpass_big_alpha():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = LowPass(alpha=0.34)
+    filter = LowPass('lpass(alpha=0.34)')
 
     for value in input_values:
         filter.calc(value)
@@ -42,7 +42,7 @@ def test_lowpass_big_alpha():
 
 def test_highpass():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = HighPass(alpha=0.05)
+    filter = HighPass('hpass(alpha=0.05)')
 
     for value in input_values:
         filter.calc(value)
@@ -51,7 +51,7 @@ def test_highpass():
 
 def test_highpass_big_alpha_minus_output():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = HighPass(alpha=0.34)
+    filter = HighPass('hpass(alpha=0.34)')
 
     for value in input_values:
         filter.calc(value)
@@ -60,7 +60,7 @@ def test_highpass_big_alpha_minus_output():
 
 def test_highpass_big_alpha_plus_output():
     input_values = [110, 13, 50, 20, 3, 7, 49]
-    filter = HighPass(alpha=0.34)
+    filter = HighPass('hpass(alpha=0.34)')
 
     for value in input_values:
         filter.calc(value)
@@ -69,7 +69,7 @@ def test_highpass_big_alpha_plus_output():
 
 def test_bandpass():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = BandPass(low_alpha=0.08, high_alpha=0.33)
+    filter = BandPass('bpass(low_alpha=0.08, high_alpha=0.33)')
 
     for value in input_values:
         filter.calc(value)
@@ -78,7 +78,7 @@ def test_bandpass():
 
 def test_bandpass_big_alphas():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = BandPass(low_alpha=0.001, high_alpha=0.89)
+    filter = BandPass('bpass(low_alpha=0.001, high_alpha=0.89)')
 
     for value in input_values:
         filter.calc(value)
@@ -87,7 +87,7 @@ def test_bandpass_big_alphas():
 
 def test_notch():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = Notch(low_alpha=0.08, high_alpha=0.33)
+    filter = Notch('notch(low_alpha=0.08, high_alpha=0.33)')
 
     for value in input_values:
         filter.calc(value)
@@ -96,7 +96,7 @@ def test_notch():
 
 def test_notch_big_alphas():
     input_values = [10, 13, 50, 86, 3, 7, 18]
-    filter = Notch(low_alpha=0.001, high_alpha=0.89)
+    filter = Notch('notch(low_alpha=0.001, high_alpha=0.89)')
 
     for value in input_values:
         filter.calc(value)
@@ -105,24 +105,24 @@ def test_notch_big_alphas():
 
 def test_highcut_cutting():
     value = 35
-    filter = HighCut(cut_value=20)
+    filter = HighCut('hcut(cut=20)')
     
     assert filter.calc(value) == 20
 
 def test_highcut_not_cutting():
     value = 16
-    filter = HighCut(cut_value=20)
+    filter = HighCut('hcut(cut=20)')
     
     assert filter.calc(value) == value
 
 def test_lowcut_cutting():
     value = 16
-    filter = LowCut(cut_value=20)
+    filter = LowCut('lcut(cut=20)')
     
     assert filter.calc(value) == 20
 
 def test_lowcut_not_cutting():
     value = 35
-    filter = LowCut(cut_value=20)
+    filter = LowCut('lcut(cut=20)')
     
     assert filter.calc(value) == value
