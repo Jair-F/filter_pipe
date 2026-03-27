@@ -76,3 +76,22 @@ class HighPass(Filter):
         result = value - lpf
         super().calc(result)
         return result
+
+class BandPass(Filter):
+    def __init__(self, low_alpha=0.1, high_alpha=0.5):
+        super().__init__()
+        self._low_pass = LowPass(low_alpha)
+        self._high_pass = LowPass(high_alpha)
+        self._low_alpha = low_alpha
+        self._high_alpha = high_alpha
+
+    @override
+    def regex_match_str(self) -> str:
+        return r"^bpass\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$"
+    
+    @override    
+    def calc(self, value:float) -> float:
+        lpf = self._low_pass.calc(value)
+        result = self._high_pass.calc(lpf)
+        super().calc(result)
+        return result
