@@ -61,7 +61,7 @@ class MovingAverage(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^mavg\(n\=[0-9]+\)$'
+        return r'^mavg\(n\=\d+\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
@@ -86,7 +86,7 @@ class LowPass(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^lpass\(alpha\=([0-9]*.?[0-9]+)\)$'
+        return r'^lpass\(alpha\=(\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
@@ -110,7 +110,7 @@ class HighPass(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^hpass\(alpha\=([0-9]*.?[0-9]+)\)$'
+        return r'^hpass\(alpha\=(\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
@@ -138,7 +138,7 @@ class BandPass(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^bpass\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$'
+        return r'^bpass\(low_alpha\=(\d*.?\d+), *high_alpha\=(\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
@@ -165,7 +165,7 @@ class Notch(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^notch\(low_alpha\=([0-9]*.?[0-9]+), *high_alpha\=([0-9]*.?[0-9]+)\)$'
+        return r'^notch\(low_alpha\=(\d*.?\d+), *high_alpha\=(\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
@@ -189,7 +189,7 @@ class HighCut(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^hcut\(cut\=([0-9]*.?[0-9]+)\)$'
+        return r'^hcut\(cut\=(\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
@@ -212,7 +212,7 @@ class LowCut(Filter):
 
     @typing.override
     def regex_match_str(self) -> str:
-        return r'^lcut\(cut\=([0-9]*.?[0-9]+)\)$'
+        return r'^lcut\(cut\=(\d*.?\d+)\)$'
 
     @typing.override
     def calc(self, value:float) -> float:
