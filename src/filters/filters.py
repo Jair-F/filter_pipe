@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import sys
 from typing import override
 from collections import deque
 
@@ -9,7 +10,7 @@ class Filter:
     def __init__(self):
         self._last_calc_value = 0
 
-    def filter_matches(self, pipe:str)->bool:
+    def valid_pipe(self, pipe:str)->bool:
         matches = re.match(self.regex_match_str(), pipe)
         return matches is not None
 
@@ -18,6 +19,11 @@ class Filter:
 
     def __repr__(self = None) -> str:
         return F"filter()"
+
+    def _init_from_pipe_str(self, pipe_str:str)->None:
+        if not self.valid_pipe(pipe_str):
+            print(F"pipe: {pipe_str} does not match {self.regex_match_str()} - exiting", file=sys.stderr)
+            sys.exit(-1)
 
     @abstractmethod
     def calc(self, value:float) -> float:
@@ -29,10 +35,19 @@ class Filter:
 
 
 class MovingAverage(Filter):
-    def __init__(self, n = 10):
+    def __init__(self, pipe_str:str):
         super().__init__()
-        self._n = n
-        self._last_values = deque(maxlen=n)
+        self._init_from_pipe_str(pipe_str)
+        self._last_values = deque(maxlen=self.n)
+
+    def _init_from_pipe_str(self, pipe_str:str)->None:
+        super()._init_from_pipe_str(pipe_str)
+
+        pipe_str = pipe_str.split('(')[1]
+        pipe_str = pipe_str.split(')')[0]
+        
+        n_start_pos = re.match(r'n=', pipe_str).end()
+        self.n = int(pipe_str[n_start_pos:])
 
     @override
     def regex_match_str(self) -> str:
@@ -43,10 +58,11 @@ class MovingAverage(Filter):
         self._last_values.append(value)
         result = sum(self._last_values) / len(self._last_values)
         super().calc(result)
+        return result
 
 
 class LowPass(Filter):
-    def __init__(self, alpha=0.1):
+    def __init__(self, alpha:float=0.1):
         super().__init__()
         self._alpha = alpha
 
@@ -61,7 +77,7 @@ class LowPass(Filter):
         return result
 
 class HighPass(Filter):
-    def __init__(self, alpha=0.1):
+    def __init__(self, alpha:float=0.1):
         super().__init__()
         self._low_pass = LowPass(alpha)
 
