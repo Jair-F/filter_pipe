@@ -53,7 +53,6 @@ class Pipeline:
                 sys.exit(-1)
             self._pipeline.append(filter_obj)
 
-
     def _find_pipe_chunk_classes(self, module:object) -> dict[str, PipeChunk]:
         filter_classes = inspect.getmembers(module, inspect.isclass)
         finder = {}

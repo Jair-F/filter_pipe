@@ -109,6 +109,11 @@ def test_highcut_cutting():
 
     assert filter.calc(value) == 20
 
+def test_highcut_cutting_minus():
+    filter = HighCut('hcut(cut=-888)')
+
+    assert filter.calc(-800) == -888
+
 def test_highcut_not_cutting():
     value = 16
     filter = HighCut('hcut(cut=20)')
@@ -126,3 +131,8 @@ def test_lowcut_not_cutting():
     filter = LowCut('lcut(cut=20)')
 
     assert filter.calc(value) == value
+
+def test_lowcut_cutting_minus():
+    filter = LowCut('lcut(cut=-20)')
+
+    assert filter.calc(-22) == -20

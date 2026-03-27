@@ -20,7 +20,7 @@ class Divide(PipeChunk):
 
     @override
     def regex_match_str(self) -> str:
-        return r'^\/(\d*.?\d+)$'
+        return r'^\/[+-]*(\d*.?\d+)$'
 
     @override
     def calc(self, value:float) -> float:
@@ -44,7 +44,7 @@ class Multiply(PipeChunk):
 
     @override
     def regex_match_str(self) -> str:
-        return r'^\*(\d*.?\d+)$'
+        return r'^\*[+-]*(\d*.?\d+)$'
 
     @override
     def calc(self, value:float) -> float:

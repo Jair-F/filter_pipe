@@ -20,7 +20,7 @@ class PipeChunk:
 
         start_pos = re.search(argument, pipe_str).end()
         argument = pipe_str[start_pos:]
-        end_pos = re.search(r'[^\d.]', argument)
+        end_pos = re.search(r'[^\d.+-]', argument)
         if not end_pos:
             end_pos = len(argument)
         else:

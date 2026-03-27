@@ -57,3 +57,8 @@ def test_pipeline_with_math_multiply_and_filters_combined():
     pipe.calc(2134)
 
     assert pipe.last_calc_value_float() == 826.925
+
+def test_pipeline_with_math_with_filters_combined():
+    pipe = Pipeline('+2.3 | -4.3 | *-12.5 | / -2 | lcut(cut=-123)')
+    pipe.calc(-124)
+    assert pipe.last_calc_value_float() == -123
