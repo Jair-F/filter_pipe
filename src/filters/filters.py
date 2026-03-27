@@ -52,9 +52,27 @@ class LowPass(Filter):
 
     @override
     def regex_match_str(self) -> str:
-        return r"^lpass\(n\=[0-9]+\)$"
+        return r"^lpass\(alpha\=([0-9]*.?[0-9]+)\)$"
     
     @override    
     def calc(self, value:float) -> float:
         result = (1 - self._alpha) * self.last_calc_value() + self._alpha * value
         super().calc(result)
+        return result
+
+class HighPass(Filter):
+    def __init__(self, alpha=0.1):
+        super().__init__()
+        self._low_pass = LowPass(alpha)
+        self._alpha = alpha
+
+    @override
+    def regex_match_str(self) -> str:
+        return r"^hpass\(alpha\=([0-9]*.?[0-9]+)\)$"
+    
+    @override    
+    def calc(self, value:float) -> float:
+        lpf = self._low_pass.calc(value)
+        result = value - lpf
+        super().calc(result)
+        return result
