@@ -108,3 +108,33 @@ class Notch(Filter):
         result = value - band_to_remove
         super().calc(result)
         return result
+
+class HighCut(Filter):
+    def __init__(self, cut_value = 0.1):
+        super().__init__()
+        self._cut_value = cut_value
+
+    @override
+    def regex_match_str(self) -> str:
+        return r"^hcut\(cut\=([0-9]*.?[0-9]+)\)$"
+    
+    @override    
+    def calc(self, value:float) -> float:
+        result = min(self._cut_value, value)
+        super().calc(result)
+        return result
+
+class LowCut(Filter):
+    def __init__(self, cut_value = 0.1):
+        super().__init__()
+        self._cut_value = cut_value
+
+    @override
+    def regex_match_str(self) -> str:
+        return r"^lcut\(cut\=([0-9]*.?[0-9]+)\)$"
+    
+    @override    
+    def calc(self, value:float) -> float:
+        result = max(self._cut_value, value)
+        super().calc(result)
+        return result

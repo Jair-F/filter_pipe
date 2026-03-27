@@ -1,7 +1,7 @@
 
 import pytest
 
-from src.filters.filters import BandPass, HighPass, LowPass, MovingAverage, Notch
+from src.filters.filters import BandPass, HighCut, HighPass, LowCut, LowPass, MovingAverage, Notch
 
 
 def test_moving_average_filter_length():
@@ -103,3 +103,26 @@ def test_notch_big_alphas():
     
     assert filter.last_calc_value() == pytest.approx(18, rel=0.01)
 
+def test_highcut_cutting():
+    value = 35
+    filter = HighCut(cut_value=20)
+    
+    assert filter.calc(value) == 20
+
+def test_highcut_not_cutting():
+    value = 16
+    filter = HighCut(cut_value=20)
+    
+    assert filter.calc(value) == value
+
+def test_lowcut_cutting():
+    value = 16
+    filter = LowCut(cut_value=20)
+    
+    assert filter.calc(value) == 20
+
+def test_lowcut_not_cutting():
+    value = 35
+    filter = LowCut(cut_value=20)
+    
+    assert filter.calc(value) == value
