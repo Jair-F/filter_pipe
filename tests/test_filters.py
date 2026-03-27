@@ -1,7 +1,7 @@
 
 import pytest
 
-from src.filters.filters import BandPass, HighCut, HighPass, LowCut, LowPass, MovingAverage, Notch
+from src.pipeline.filters import BandPass, HighCut, HighPass, LowCut, LowPass, MovingAverage, Notch
 
 
 def test_moving_average_filter_length():

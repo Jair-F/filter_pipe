@@ -3,7 +3,7 @@ import re
 import sys
 from typing import Any
 
-from src.filters import filters
+from src.pipeline import filters
 
 
 class Pipeline:
