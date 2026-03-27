@@ -23,6 +23,9 @@ class Filter:
     def calc(self, value:float) -> float:
         self._last_calc_value = value
         return value
+    
+    def last_calc_value(self) -> float:
+        return self._last_calc_value
 
 
 class MovingAverage(Filter):
@@ -40,14 +43,12 @@ class MovingAverage(Filter):
         self._last_values.append(value)
         result = sum(self._last_values) / len(self._last_values)
         super().calc(result)
-    
-    def last_calc_value(self) -> float:
-        return self._last_calc_value
 
 
 class LowPass(Filter):
-    def __init__(self, alpha=10):
-        super().__init__(alpha)
+    def __init__(self, alpha=0.1):
+        super().__init__()
+        self._alpha = alpha
 
     @override
     def regex_match_str(self) -> str:
@@ -55,4 +56,5 @@ class LowPass(Filter):
     
     @override    
     def calc(self, value:float) -> float:
-        pass
+        result = (1 - self._alpha) * self.last_calc_value() + self._alpha * value
+        super().calc(result)
