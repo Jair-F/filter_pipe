@@ -1,4 +1,4 @@
-from src.pipeline.math import Divide
+from src.pipeline.math_ops import Divide
 
 
 def test_math_divide_no_spaces():

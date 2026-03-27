@@ -3,13 +3,14 @@ import re
 import sys
 from typing import Any
 
-from src.pipeline import filters
+from src.pipeline import filters, math_ops
 from src.pipeline.pipe import PipeChunk
 
 
 class Pipeline:
     def __init__(self, pipeline_str:str):
-        self._filters:dict[str, filters.Filter] = self._find_filter_classes()
+        self._filters:dict[str, filters.Filter] = self._find_pipe_chunk_classes(filters)
+        self._math_ops:dict[str, PipeChunk] = self._find_pipe_chunk_classes(math_ops)
         self._pipeline:list[PipeChunk] = []
         self._last_calc_value = 0
 
@@ -33,11 +34,12 @@ class Pipeline:
                 return True
         return False
 
-    def _build_filter_from_pipe(self, single_pipe_chunk:str) -> filters.Filter:
-        for regex_filter_match, filter_type in self._filters.items():
+    def _build_pipe_chunk_from_pipe(self, single_pipe_chunk:str) -> filters.Filter:
+        combined_lists = self._filters | self._math_ops
+
+        for regex_filter_match, filter_type in combined_lists.items():
             if re.match(regex_filter_match, single_pipe_chunk):
                 return filter_type(single_pipe_chunk)
-
 
     def _build_pipline(self, pipeline_str:str)->None:
         pipeline_str = pipeline_str.strip().replace(' ', '').replace('\t', '')
@@ -45,17 +47,17 @@ class Pipeline:
 
         for chunk in pipe_chunks:
             chunk = chunk.strip()
-            filter_obj = self._build_filter_from_pipe(chunk)
+            filter_obj = self._build_pipe_chunk_from_pipe(chunk)
             if not filter_obj:
                 print(F'filter: "{pipeline_str}" does not match any filter!!', file=sys.stderr)
                 sys.exit(-1)
             self._pipeline.append(filter_obj)
 
 
-    def _find_filter_classes(self) -> dict[str, filters.Filter]:
-        filter_classes = inspect.getmembers(filters, inspect.isclass)
+    def _find_pipe_chunk_classes(self, module:object) -> dict[str, PipeChunk]:
+        filter_classes = inspect.getmembers(module, inspect.isclass)
         finder = {}
         for _, filter_type in filter_classes:
-            filter_obj:filters.Filter = filter_type()
+            filter_obj:PipeChunk = filter_type()
             finder[filter_obj.regex_match_str()] = filter_type
         return finder
