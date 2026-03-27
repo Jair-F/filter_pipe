@@ -166,7 +166,7 @@ Tests are located in the `tests/` directory:
 ## 🔗 Resources
 
 - **💼 Regex Patterns**: Learn and test regex patterns used in this project at [regex101.com](https://regex101.com/)
-- **📚 Documentation**: See `doc/index.html` for API documentation
+- **📚 Tools**: See `tools/index.html` for playing around with the filters and learn how to calibrate the gains.
 
 ---
 
