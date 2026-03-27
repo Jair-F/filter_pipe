@@ -2,6 +2,8 @@
 
 A powerful and flexible Python library for building data processing pipelines with filters and mathematical operations. Chain multiple filters together to process numerical data in a clean, intuitive way.
 
+[![PyPI Version](https://img.shields.io/pypi/v/filter_pipe.svg)](https://pypi.org/project/filter_pipe/) [![Python Versions](https://img.shields.io/pypi/pyversions/filter_pipe.svg)](https://pypi.org/project/filter_pipe/)
+
 ---
 
 ## ✨ Features
@@ -165,7 +167,8 @@ Tests are located in the `tests/` directory:
 
 ## 🔗 Resources
 
-- **💼 Regex Patterns**: Learn and test regex patterns used in this project at [regex101.com](https://regex101.com/)
+- **📦 PyPI Package**: Find this project on [PyPI](https://pypi.org/project/filter_pipe/)
+- **�💼 Regex Patterns**: Learn and test regex patterns used in this project at [regex101.com](https://regex101.com/)
 - **📚 Tools**: See `tools/index.html` for playing around with the filters and learn how to calibrate the gains.
 
 ---
