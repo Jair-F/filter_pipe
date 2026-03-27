@@ -11,9 +11,6 @@ class Filter(PipeChunk):
     def pipe_from_args() -> str:
         return 'filter()'
 
-    def __init__(self):
-        super().__init__()
-
     def _extract_argument_float(self, pipe_str: str, argument: str) -> float:
         argument += r'\='
 
@@ -63,7 +60,7 @@ class MovingAverage(Filter):
     def __init__(self, pipe_str: str = pipe_from_args()):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
-        self._last_values = collections.deque(maxlen=self._n)
+        self._last_values: collections.deque = collections.deque(maxlen=self._n)
 
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)

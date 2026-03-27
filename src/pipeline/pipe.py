@@ -1,4 +1,3 @@
-import abc
 import re
 import sys
 
@@ -41,7 +40,6 @@ class PipeChunk:
             )
             sys.exit(-1)
 
-    @abc.abstractmethod
     def calc(self, value: float) -> float:
         self._last_calc_value = value
         return value

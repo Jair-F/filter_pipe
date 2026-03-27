@@ -32,8 +32,8 @@ class Pipeline:
     def _is_valid_filter_pipe(self, pipe_chunk: str) -> bool:
         pipe_chunk = pipe_chunk.strip()
 
-        for filter in self._filters.values():
-            if filter.valid_pipe(pipe_chunk):
+        for filt in self._filters.values():
+            if filt.valid_pipe(pipe_chunk):
                 return True
         return False
 
@@ -43,6 +43,7 @@ class Pipeline:
         for regex_filter_match, filter_type in combined_lists.items():
             if re.match(regex_filter_match, single_pipe_chunk):
                 return filter_type(single_pipe_chunk)
+        return None
 
     def _build_pipline(self, pipeline_str: str) -> None:
         pipeline_str = pipeline_str.strip().replace(' ', '').replace('\t', '')
@@ -61,7 +62,7 @@ class Pipeline:
 
     def _find_pipe_chunk_classes(self, module: object) -> dict[str, PipeChunk]:
         filter_classes = inspect.getmembers(module, inspect.isclass)
-        finder = {}
+        finder: dict[str, PipeChunk] = {}
         for _, filter_type in filter_classes:
             filter_obj: PipeChunk = filter_type()
             finder[filter_obj.regex_match_str()] = filter_type

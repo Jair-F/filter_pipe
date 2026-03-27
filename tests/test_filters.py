@@ -1,4 +1,4 @@
-import pytest
+import pytest  # pylint: disable=import-error
 
 from src.pipeline.filters import BandPass
 from src.pipeline.filters import HighCut
