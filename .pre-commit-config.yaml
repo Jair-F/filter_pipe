@@ -39,17 +39,17 @@ repos:
         - id: ruff
           args: [ --fix ]
         - id: ruff-format
-    # - repo: https://github.com/pre-commit/mirrors-mypy
-    #   rev: v1.18.2
-    #   hooks:
-    #       - id: mypy
-    #         args: [
-    #                 "--ignore-missing-imports",
-    #                 "--allow-untyped-decorators", # remove if not needed
-    #                 "--strict",
-    #                 "--install-types",
-    #                 "--non-interactive",
-    #             ]
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: v1.18.2
+      hooks:
+          - id: mypy
+            args: [
+                    "--ignore-missing-imports",
+                    "--allow-untyped-decorators", # remove if not needed
+                    "--strict",
+                    "--install-types",
+                    "--non-interactive",
+                ]
     - repo: https://github.com/PyCQA/pylint
       rev: v3.3.0
       hooks:

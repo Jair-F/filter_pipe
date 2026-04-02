@@ -1,5 +1,6 @@
 import re
 import sys
+from typing import Any
 
 
 class PipeChunk:
@@ -7,8 +8,8 @@ class PipeChunk:
     def pipe_from_args() -> str:
         return 'pipe'
 
-    def __init__(self) -> None:
-        self._last_calc_value = 0
+    def __init__(self, __pipe_str: str = '') -> None:
+        self._last_calc_value: float = 0
 
     def valid_pipe(self, pipe: str) -> bool:
         matches = re.match(self.regex_match_str(), pipe)
@@ -17,13 +18,12 @@ class PipeChunk:
     def _extract_argument_float(self, pipe_str: str, argument: str) -> float:
         pipe_str = pipe_str.strip().replace(' ', '').replace('\t', '')
 
-        start_pos = re.search(argument, pipe_str).end()
+        tmp_match: re.Match[str] | None = re.search(argument, pipe_str)
+        start_pos = tmp_match.end() if tmp_match else None
+
         argument = pipe_str[start_pos:]
-        end_pos = re.search(r'[^\d.+-]', argument)
-        if not end_pos:
-            end_pos = len(argument)
-        else:
-            end_pos = end_pos.end() - 1
+        tmp_match = re.search(r'[^\d.+-]', argument)
+        end_pos = tmp_match.end() - 1 if tmp_match else None
 
         argument = argument[:end_pos]
         return float(argument)
@@ -31,7 +31,7 @@ class PipeChunk:
     def regex_match_str(self) -> str:
         return r'^pipe$'  # https://regex101.com/
 
-    def _init_from_pipe_str(self, pipe_str: str) -> None:
+    def _init_from_pipe_str(self, pipe_str: str) -> Any:
         pipe_str = pipe_str.strip().replace(' ', '').replace('\t', '')
         if not self.valid_pipe(pipe_str):
             print(
@@ -40,7 +40,7 @@ class PipeChunk:
             )
             sys.exit(-1)
 
-    def calc(self, value: float) -> float:
+    def calc(self, value: float) -> float | str:
         self._last_calc_value = value
         return value
 
