@@ -13,14 +13,14 @@ description = "Build and expose flexible calculation pipelines that give the end
 requires-python = ">=3.8"
 dependencies = [
     "setuptools-scm",
+    "pytest",
+    "build",
+    "twine",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
     "pre-commit",
-    "build",
-    "twine",
 ]
 
 [project.urls]
