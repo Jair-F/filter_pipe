@@ -12,6 +12,7 @@ class Divide(PipeChunk):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._divider = self._extract_argument_float(pipe_str, r'\/')
@@ -36,6 +37,7 @@ class Multiply(PipeChunk):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._multiplier = self._extract_argument_float(pipe_str, r'\*')
@@ -60,6 +62,7 @@ class Add(PipeChunk):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._add = self._extract_argument_float(pipe_str, r'\+')
@@ -84,6 +87,7 @@ class Subtract(PipeChunk):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._subtract = self._extract_argument_float(pipe_str, r'\-')
