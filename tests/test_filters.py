@@ -3,11 +3,6 @@ import pytest  # pylint: disable=import-error
 from src.pipeline.filters import MovingAverage
 from src.pipeline.pipeline import Pipeline
 
-# def test_to_filter_extracting_argument():
-#     filter = MovingAverage('mavg(n=999)')
-
-#     assert filter._n == 999
-
 def test_to_string_ndigits_eight():
     pipe = Pipeline('str(ndigits=8)')
 

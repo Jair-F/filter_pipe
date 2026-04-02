@@ -1,7 +1,6 @@
 from src.pipeline.pipeline import Pipeline
 
 
-
 def test_pipeline_with_spaces_and_tabs():
     pipe = Pipeline(' \t  lpass(alpha=0.2)   |  \t  lpass(alpha=0.2) \t ')
 
