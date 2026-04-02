@@ -11,7 +11,17 @@ authors = [
 ]
 description = "Build and expose flexible calculation pipelines that give the end user total control over dynamic variables and data logic."
 requires-python = ">=3.8"
-dependencies = []
+dependencies = [
+    "setuptools-scm",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pre-commit",
+    "build",
+    "twine",
+]
 
 [project.urls]
 Repository = "https://github.com/Jair-F/filter_pipe"

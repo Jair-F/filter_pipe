@@ -87,9 +87,3 @@ dmypy.json
 
 # pyre
 .pyre/
-
-# IDEs
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
