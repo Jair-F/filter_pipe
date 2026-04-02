@@ -20,7 +20,7 @@ Repository = "https://github.com/Jair-F/filter_pipe"
 # You can leave this table empty; setuptools-scm uses smart defaults.
 # It automatically detects the version from your Git tags.
 [tool.ruff]
-line-length = 120
+line-length = 100
 
 [tool.ruff.lint]
 # This enables the linting rules for quotes (the 'Q' group)

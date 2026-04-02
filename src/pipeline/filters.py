@@ -1,4 +1,3 @@
-import abc
 import collections
 import re
 import typing
@@ -11,16 +10,21 @@ class Filter(PipeChunk):
     def pipe_from_args() -> str:
         return 'filter()'
 
+    @typing.override
     def _extract_argument_float(self, pipe_str: str, argument: str) -> float:
         argument += r'\='
 
-        start_pos = re.search(argument, pipe_str).end()
+        tmp_match: re.Match[str] | None = re.search(argument, pipe_str)
+        start_pos = tmp_match.end() if tmp_match else None
+
         argument = pipe_str[start_pos:]
-        end_pos = re.search(r'[\,\)]{1}', argument).end() - 1
+        tmp_match = re.search(r'[\,\)]{1}', argument)
+        end_pos = tmp_match.end() - 1 if tmp_match else None
 
         argument = argument[:end_pos]
         return float(argument)
 
+    @typing.override
     def regex_match_str(self) -> str:
         return r'^filter\(\)$'
 
@@ -34,6 +38,7 @@ class ToString(Filter):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         if pipe_str.find('ndigits') > 0:
@@ -41,10 +46,11 @@ class ToString(Filter):
         else:
             self._ndigits = 0
 
+    @typing.override
     def regex_match_str(self) -> str:
         return r'^str\((ndigits=\d+)?\)$'
 
-    @abc.abstractmethod
+    @typing.override
     def calc(self, value: float) -> str:
         self._last_calc_value = round(value, ndigits=self._ndigits)
         if self._last_calc_value.is_integer():
@@ -60,8 +66,9 @@ class MovingAverage(Filter):
     def __init__(self, pipe_str: str = pipe_from_args()):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
-        self._last_values: collections.deque = collections.deque(maxlen=self._n)
+        self._last_values: collections.deque[float] = collections.deque(maxlen=self._n)
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._n = int(self._extract_argument_float(pipe_str, r'n'))
@@ -87,6 +94,7 @@ class LowPass(Filter):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._alpha = self._extract_argument_float(pipe_str, r'alpha')
@@ -112,6 +120,7 @@ class HighPass(Filter):
         alpha = self._init_from_pipe_str(pipe_str)
         self._low_pass = LowPass(LowPass.pipe_from_args(alpha=alpha))
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> float:
         super()._init_from_pipe_str(pipe_str)
         return self._extract_argument_float(pipe_str, r'alpha')
@@ -139,6 +148,7 @@ class BandPass(Filter):
         self._low_pass = LowPass(LowPass.pipe_from_args(low_alpha))
         self._high_pass = HighPass(HighPass.pipe_from_args(high_alpha))
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> tuple[float, float]:
         super()._init_from_pipe_str(pipe_str)
         low_alpha = self._extract_argument_float(pipe_str, r'low_alpha')
@@ -169,6 +179,7 @@ class Notch(Filter):
             BandPass.pipe_from_args(low_alpha=low_alpha, high_alpha=high_alpha),
         )
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> tuple[float, float]:
         super()._init_from_pipe_str(pipe_str)
         low_alpha = self._extract_argument_float(pipe_str, r'low_alpha')
@@ -196,6 +207,7 @@ class HighCut(Filter):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._cut_value = self._extract_argument_float(pipe_str, r'cut')
@@ -220,6 +232,7 @@ class LowCut(Filter):
         super().__init__()
         self._init_from_pipe_str(pipe_str)
 
+    @typing.override
     def _init_from_pipe_str(self, pipe_str: str) -> None:
         super()._init_from_pipe_str(pipe_str)
         self._cut_value = self._extract_argument_float(pipe_str, r'cut')
