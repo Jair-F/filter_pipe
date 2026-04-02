@@ -32,7 +32,10 @@ repos:
       rev: v2.3.3
       hooks:
           - id: autoflake
-            args: [--remove-all-unused-imports, --in-place]
+            args: [
+              --in-place,
+              --remove-all-unused-imports
+            ]
     - repo: https://github.com/astral-sh/ruff-pre-commit
       rev: v0.15.8
       hooks:
@@ -40,18 +43,17 @@ repos:
           args: [ --fix ]
         - id: ruff-format
     - repo: https://github.com/pre-commit/mirrors-mypy
-      rev: v1.18.2
+      rev: v1.20.0
       hooks:
           - id: mypy
             args: [
-                    "--ignore-missing-imports",
                     "--allow-untyped-decorators", # remove if not needed
                     "--strict",
                     "--install-types",
                     "--non-interactive",
                 ]
     - repo: https://github.com/PyCQA/pylint
-      rev: v3.3.0
+      rev: v4.0.5
       hooks:
           - id: pylint
             args: [
