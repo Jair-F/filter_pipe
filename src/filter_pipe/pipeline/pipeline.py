@@ -2,9 +2,9 @@ import inspect
 import re
 import sys
 
-from src.pipeline import filters
-from src.pipeline import math_ops
-from src.pipeline.pipe import PipeChunk
+from filter_pipe.pipeline import filters
+from filter_pipe.pipeline import math_ops
+from filter_pipe.pipeline.pipe import PipeChunk
 
 
 class Pipeline:

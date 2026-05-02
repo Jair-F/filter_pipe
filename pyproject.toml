@@ -23,6 +23,10 @@ dev = [
     "pre-commit",
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
 [project.urls]
 Repository = "https://github.com/Jair-F/filter_pipe"
 

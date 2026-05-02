@@ -1,4 +1,4 @@
-from src.pipeline.pipeline import Pipeline
+from filter_pipe.pipeline.pipeline import Pipeline
 
 
 def test_pipeline_with_spaces_and_tabs():
