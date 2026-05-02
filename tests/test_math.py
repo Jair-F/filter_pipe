@@ -1,4 +1,4 @@
-from src.pipeline.pipeline import Pipeline
+from filter_pipe.pipeline import Pipeline
 
 
 def test_pipeline_math_divide_no_spaces():

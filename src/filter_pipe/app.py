@@ -1,5 +1,5 @@
-from src.pipeline.math_ops import Divide
-from src.pipeline.pipeline import Pipeline
+from filter_pipe.math_ops import Divide
+from filter_pipe.pipeline import Pipeline
 
 if __name__ == '__main__':
     pipeline = Pipeline(' mavg(n=10) | lpass(alpha=0.2) | str(ndigits=2)')

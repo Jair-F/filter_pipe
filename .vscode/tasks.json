@@ -17,7 +17,7 @@
         {
             "label": "Run App",
             "type": "shell",
-            "command": "python3 -m src.app",
+            "command": "python3 -m filter_pipe.app",
             "presentation": {
                 "echo": true,
                 "reveal": "always",

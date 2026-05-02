@@ -1,7 +1,7 @@
 import pytest  # pylint: disable=import-error
 
-from src.pipeline.filters import MovingAverage
-from src.pipeline.pipeline import Pipeline
+from filter_pipe.filters import MovingAverage
+from filter_pipe.pipeline import Pipeline
 
 def test_to_string_ndigits_eight():
     pipe = Pipeline('str(ndigits=8)')
