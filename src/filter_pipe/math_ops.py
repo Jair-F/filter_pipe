@@ -1,6 +1,6 @@
 from typing import override
 
-from filter_pipe.pipeline.pipe import PipeChunk
+from filter_pipe.pipe import PipeChunk
 
 
 class Divide(PipeChunk):

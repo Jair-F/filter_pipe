@@ -2,7 +2,7 @@ import collections
 import re
 import typing
 
-from filter_pipe.pipeline.pipe import PipeChunk
+from filter_pipe.pipe import PipeChunk
 
 
 class Filter(PipeChunk):
